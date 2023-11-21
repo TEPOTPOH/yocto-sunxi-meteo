@@ -1,0 +1,82 @@
+From e8db4c6e74c75e61ebd1df37946a101c68f8e01f Mon Sep 17 00:00:00 2001
+From: Eliseev Roman <roman.eliseev@auriga.com>
+Date: Fri, 17 Nov 2023 11:31:53 +0300
+Subject: [PATCH] Stop using uniocode module, add setup serial device and
+ autocalibration in config
+
+---
+ config.ini.dist      |  6 ++++++
+ mhz19-mqtt-daemon.py | 12 ++++++++++--
+ 2 files changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/config.ini.dist b/config.ini.dist
+index 3a139a7..f39e2d2 100644
+--- a/config.ini.dist
++++ b/config.ini.dist
+@@ -18,6 +18,12 @@ reporting_method = homeassistant-mqtt
+ # Detection range of the used sensor in ppm. Currently valid options are: 2000, 5000, 10000 (Default: 5000)
+ #detection_range = 5000
+ 
++# Serial device for sensor (Default: /dev/ttyS4)
++#serialdev = /dev/ttyS4
++
++# ON/OFF autocalibration (Default: not touch)
++#autocalibration = false
++
+ [Daemon]
+ 
+ # Enable or Disable an endless execution loop (Default: true)
+diff --git a/mhz19-mqtt-daemon.py b/mhz19-mqtt-daemon.py
+index e7141d8..ce44556 100755
+--- a/mhz19-mqtt-daemon.py
++++ b/mhz19-mqtt-daemon.py
+@@ -11,7 +11,6 @@ from time import time, sleep, localtime, strftime
+ from colorama import init as colorama_init
+ from colorama import Fore, Back, Style
+ from configparser import ConfigParser
+-from unidecode import unidecode
+ import mh_z19
+ import paho.mqtt.client as mqtt
+ import sdnotify
+@@ -51,7 +50,7 @@ def print_line(text, error = False, warning=False, sd_notify=False, console=True
+             print(Fore.GREEN + '[{}] '.format(timestamp) + Style.RESET_ALL + '{}'.format(text) + Style.RESET_ALL)
+     timestamp_sd = strftime('%b %d %H:%M:%S', localtime())
+     if sd_notify:
+-        sd_notifier.notify('STATUS={} - {}.'.format(timestamp_sd, unidecode(text)))
++        sd_notifier.notify('STATUS={} - {}.'.format(timestamp_sd, text.encode('utf-8')))
+ 
+ # Eclipse Paho callbacks - http://www.eclipse.org/paho/clients/python/docs/#callbacks
+ def on_connect(client, userdata, flags, rc):
+@@ -79,6 +78,8 @@ reporting_mode = config['General'].get('reporting_method', 'homeassistant-mqtt')
+ daemon_enabled = config['Daemon'].getboolean('enabled', True)
+ sleep_period = config['Daemon'].getint('period', 300)
+ detection_range = config['MH-Z19'].getint('detection_range', 5000)
++serialdev = config['MH-Z19'].get('serialdev', '/dev/ttyS4')
++autocalibration = config['MH-Z19'].getboolean('autocalibration', None)
+ 
+ if reporting_mode == 'homeassistant-mqtt':
+     default_base_topic = 'homeassistant'
+@@ -161,6 +162,7 @@ if reporting_mode == 'homeassistant-mqtt':
+     payload['name'] = "{} UhUl".format(sensor_name)
+     mqtt_client.publish('{}/{}_uhul/config'.format(topic_path, sensor_name).lower(), json.dumps(payload), 1, True)
+ 
++mh_z19.set_serialdevice(serialdev)
+ 
+ if detection_range == 5000:
+     mh_z19.detection_range_5000(serial_console_untouched=True)
+@@ -172,6 +174,12 @@ else:
+     # Unknown detection range, setting to 5000
+     mh_z19.detection_range_5000(serial_console_untouched=True)
+ 
++if autocalibration != None and autocalibration in [True, False]:
++    if autocalibration:
++        mh_z19.abc_on(serial_console_untouched=True)
++    else:
++        mh_z19.abc_off(serial_console_untouched=True)
++
+ # Sensor data retrieval and publication
+ while True:
+    print_line('Retrieving data from MH-Z19 sensor...')
+-- 
+2.36.1.windows.1
+

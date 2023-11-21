@@ -1,0 +1,59 @@
+From 634db8ce80d38b96b1d713063dd6670c6201e401 Mon Sep 17 00:00:00 2001
+From: TEPO <tepotpoh@gmail.com>
+Date: Sun, 12 Nov 2023 02:04:00 +0300
+Subject: [PATCH] uart4
+
+---
+ arch/arm/boot/dts/sun4i-a10-cubieboard.dts |  7 +++++++
+ arch/arm/boot/dts/sun4i-a10.dtsi           | 10 ++++++++++
+ 2 files changed, 17 insertions(+)
+
+diff --git a/arch/arm/boot/dts/sun4i-a10-cubieboard.dts b/arch/arm/boot/dts/sun4i-a10-cubieboard.dts
+index 0645d60..b319b2e 100644
+--- a/arch/arm/boot/dts/sun4i-a10-cubieboard.dts
++++ b/arch/arm/boot/dts/sun4i-a10-cubieboard.dts
+@@ -53,6 +53,7 @@ / {
+ 
+ 	aliases {
+ 		serial0 = &uart0;
++		serial4 = &uart4;
+ 	};
+ 
+ 	chosen {
+@@ -242,6 +243,12 @@ &uart0 {
+ 	status = "okay";
+ };
+ 
++&uart4 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart4_pg_pins>;
++	status = "okay";
++};
++
+ &usb_otg {
+ 	dr_mode = "otg";
+ 	status = "okay";
+diff --git a/arch/arm/boot/dts/sun4i-a10.dtsi b/arch/arm/boot/dts/sun4i-a10.dtsi
+index 1c5a666..8163127 100644
+--- a/arch/arm/boot/dts/sun4i-a10.dtsi
++++ b/arch/arm/boot/dts/sun4i-a10.dtsi
+@@ -837,6 +837,16 @@ uart1_pins: uart1-pins {
+ 				pins = "PA10", "PA11";
+ 				function = "uart1";
+ 			};
++
++			uart4_pg_pins: uart4-pg-pins {
++				pins = "PG10", "PG11";
++				function = "uart4";
++			};
++
++			uart4_ph_pins: uart4-ph-pins {
++				pins = "PH4", "PH5";
++				function = "uart4";
++			};
+ 		};
+ 
+ 		timer@1c20c00 {
+-- 
+2.34.1
+

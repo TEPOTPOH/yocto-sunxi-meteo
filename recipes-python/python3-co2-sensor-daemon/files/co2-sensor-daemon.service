@@ -1,0 +1,15 @@
+[Unit]
+Description=Get co2 sensor values and post to mqtt broker
+After=rc-local.service
+
+[Service]
+WorkingDirectory=@DMNWORKDIR@/
+User=pi
+ExecStart=@BINDIR@/python3 @DMNWORKDIR@/mhz19-mqtt-daemon.py
+Restart=always
+RestartSec=30
+Type=simple
+PIDFile=@LOCALSTATEDIR@/run/co2-mqtt.pid
+
+[Install]
+WantedBy=multi-user.target
