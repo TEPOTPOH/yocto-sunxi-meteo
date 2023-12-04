@@ -1,41 +1,81 @@
-This README file contains information on the contents of the meta-meteo layer.
+Base information:
+============
+Application: home meteostation with number of sensors and colour LCD display
 
-Please see the corresponding sections below for details.
+Hardware:
+ - cubieboard1: Allwinner A10 (sun4i), HDMI, Ethernet LAN
+ - CO2 sensor MH-Z19b
+ - Temperature and Relative Humidiy sensor HTU21D
+ - TODO: 7 inch IPS LCD Wisecoco 1024x600, HDMI, USB touch
+ - TODO: WIFI
+
+TODO: Scheme of hardware connections
+
+Software:
+ - Yocto linux, based on core image Sato
+ - mainline kernel
+ - mainline U-boot
+ - MH-Z19b sensor handler based on python3
+ - Mosquitoo - MQTT broker
+ - WIP: HTU21D sensor handler based on rust
+ - TODO: Graphics - ???
+
+
+meta-meteo layer
+============
 
 Dependencies
 ============
 
-  URI: <first dependency>
-  branch: <branch name>
+  1. layers, all branches: kirkstone
 
-  URI: <second dependency>
-  branch: <branch name>
+  TODO: add URLs
 
-  .
-  .
-  .
+  poky/meta
+  meta-poky
+  meta-yocto-bsp
+  meta-sunxi
+  meta-openembedded/meta-oe
+  meta-openembedded/meta-python
+  meta-openembedded/meta-networking
 
-Patches
+
+TODO: Description of modules
 =======
 
-Please submit any patches against the meta-meteo layer to the xxxx mailing list (xxxx@zzzz.org)
-and cc: the maintainer:
 
-Maintainer: XXX YYYYYY <xxx.yyyyyy@zzzzz.com>
-
-Table of Contents
+HOW TO USE
 =================
 
-  I. Adding the meta-meteo layer to your build
- II. Misc
+1. Add layers to bblayers.conf, for example:
+  BBLAYERS ?= " \
+  /home/user/work2/yocto/poky/meta \
+  /home/user/work2/yocto/poky/meta-poky \
+  /home/user/work2/yocto/poky/meta-yocto-bsp \
+  /home/user/work2/yocto/poky/meta-sunxi \
+  /home/user/work2/yocto/poky/meta-openembedded/meta-oe \
+  /home/user/work2/yocto/poky/meta-openembedded/meta-python \
+  /home/user/work2/yocto/poky/meta-openembedded/meta-networking \
+  /home/user/work2/yocto/my_layers/meta-meteo \
+  "
 
+2. Add to local.conf
+  # mandatory:
+  MACHINE ??= "cubieboard"
+  MACHINEOVERRIDES .= ":use-mailine-graphics"
+  XSERVER:append = " xf86-video-modesetting"
+  LICENSE_FLAGS_ACCEPTED = "commercial license"
 
-I. Adding the meta-meteo layer to your build
-=================================================
+  # optional and build hardware dependent
+  BB_NUMBER_THREADS = "4"
+  BB_NUMBER_PARSE_THREADS = "8"
+  PARALLEL_MAKE = "-j 2"
+  PARALLEL_MAKEINST = "-j 2"
+  INHERIT += "rm_work"
 
-Run 'bitbake-layers add-layer meta-meteo'
+3. Build: bitbake core-image-meteo
+4. Write image on SD card (/dev/sdb):
+sudo dd bs=4M if=/home/user/work2/yocto/sunxi-meteo-build/tmp/deploy/images/cubieboard/core-image-meteo-cubieboard.sunxi-sdimg of=/dev/sdb status=progress && sync /dev/sdb
+5. Insert SD card to Cubieboard, connect to LAN, Power ON
+TODO: how to look MQTT data from broker
 
-II. Misc
-========
-
---- replace with specific information about the meta-meteo layer ---
