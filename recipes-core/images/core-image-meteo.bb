@@ -18,3 +18,5 @@ export IMAGE_BASENAME = "core-image-meteo"
 IMAGE_INSTALL:append = " python3 python3-co2-sensor-daemon"
 # for MQTT server
 IMAGE_INSTALL:append = " mosquitto"
+# for HTU21D relative humidity and temperature sensor
+IMAGE_INSTALL:append = " htu21d-daemon"

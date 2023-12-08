@@ -1,0 +1,11 @@
+[package]
+name = "htu21d-daemon"
+version = "0.1.0"
+authors = ["TEPO <tepotpoh@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+htu21d = {git = "https://github.com/jdeeny/htu21d-rs"}
+linux-embedded-hal = "0.2.2"
+rumqttc = "0.23.0"
+json = "0.12.4"

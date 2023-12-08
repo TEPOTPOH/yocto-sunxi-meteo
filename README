@@ -15,9 +15,9 @@ Software:
  - Yocto linux, based on core image Sato
  - mainline kernel
  - mainline U-boot
- - MH-Z19b sensor handler based on python3
+ - MH-Z19b sensor daemon based on python3
  - Mosquitoo - MQTT broker
- - WIP: HTU21D sensor handler based on rust
+ - HTU21D sensor daemon based on rust
  - TODO: Graphics - ???
 
 
@@ -27,17 +27,19 @@ meta-meteo layer
 Dependencies
 ============
 
-  1. layers, all branches: kirkstone
+  1. layers
 
   TODO: add URLs
 
-  poky/meta
-  meta-poky
-  meta-yocto-bsp
-  meta-sunxi
-  meta-openembedded/meta-oe
-  meta-openembedded/meta-python
-  meta-openembedded/meta-networking
+  Name,                branch/tag
+  meta                 
+  meta-poky            
+  meta-yocto-bsp       "kirkstone"
+  meta-sunxi           "kirkstone"
+  meta-oe              
+  meta-python          
+  meta-networking      "kirkstone"
+  meta-rust-bin        "master" https://github.com/rust-embedded/meta-rust-bin
 
 
 TODO: Description of modules
@@ -57,6 +59,7 @@ HOW TO USE
   /home/user/work2/yocto/poky/meta-openembedded/meta-python \
   /home/user/work2/yocto/poky/meta-openembedded/meta-networking \
   /home/user/work2/yocto/my_layers/meta-meteo \
+  /home/user/work2/yocto/my_layers/meta-rust-bin \
   "
 
 2. Add to local.conf
