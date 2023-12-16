@@ -9,3 +9,4 @@ htu21d = {git = "https://github.com/jdeeny/htu21d-rs"}
 linux-embedded-hal = "0.2.2"
 rumqttc = "0.23.0"
 json = "0.12.4"
+envconfig = "0.10.0"
