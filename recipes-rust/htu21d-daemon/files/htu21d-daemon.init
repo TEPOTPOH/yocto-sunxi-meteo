@@ -4,9 +4,8 @@
 
 set -e
 
-PIDFILE=@LOCALSTATEDIR@/run/co2-mqtt.pid
-DAEMON=@DMNWORKDIR@/mhz19-mqtt-daemon.py
-PYTHON=@BINDIR@/python3
+PIDFILE=@LOCALSTATEDIR@/run/htu21d-daemon.pid
+DAEMON=@DMNWORKDIR@/htu21d-daemon
 
 test -x ${DAEMON} || exit 0
 
@@ -18,17 +17,17 @@ export PATH="${PATH:+$PATH:}@BINDIR@"
 
 case "$1" in
     start)
-        echo "Starting MH-Z19B CO2 sensor daemon" "co2-sensor-daemon"
-        if start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --exec ${PYTHON} -- "${DAEMON}" ; then
-            echo "MH-Z19B CO2 sensor daemon emergency has stop"
+        echo "Starting HTU21D relative humidity and temperature sensor daemon" "htu21d-sensor-daemon"
+        if start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --exec ${DAEMON} ; then
+            echo "HTU21D sensor daemon emergency has stop"
             exit 0
         else
-            echo "MH-Z19B CO2 sensor daemon emergency has stop with error status"
+            echo "HTU21D sensor daemon emergency has stop with error status"
             exit 1
         fi
         ;;
     stop)
-        echo "Stopping MH-Z19B CO2 sensor daemon" "co2-sensor-daemon"
+        echo "Stopping HTU21D relative humidity and temperature sensor daemon" "htu21d-sensor-daemon"
         if start-stop-daemon --stop --oknodo --pidfile ${PIDFILE}; then
             rm -f ${PIDFILE}
             exit 0
@@ -37,11 +36,11 @@ case "$1" in
         fi
         ;;
     restart)
-        echo "Restarting MH-Z19B CO2 sensor daemon" "co2-sensor-daemon"
+        echo "Restarting HTU21D relative humidity and temperature sensor daemon" "htu21d-sensor-daemon"
         if start-stop-daemon --stop  --oknodo --retry 30 --pidfile ${PIDFILE}; then
             rm -f ${PIDFILE}
         fi
-        if start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --exec ${PYTHON} -- "${DAEMON}" ; then
+        if start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --exec ${DAEMON} ; then
             exit 0
         else
             exit 1

@@ -1,0 +1,15 @@
+[Unit]
+Description=Get HTU21D sensor values and post to mqtt broker
+After=rc-local.service
+
+[Service]
+WorkingDirectory=@DMNWORKDIR@/
+User=pi
+ExecStart=@DMNWORKDIR@/htu21d-daemon
+Restart=always
+RestartSec=30
+Type=simple
+PIDFile=@LOCALSTATEDIR@/run/htu21d-daemon.pid
+
+[Install]
+WantedBy=multi-user.target

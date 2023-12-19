@@ -14,7 +14,17 @@ DISTRO_FEATURES_DEFAULT:remove = " bluetooth 3g nfc"
 
 export IMAGE_BASENAME = "core-image-meteo"
 
-# for application that handle sensors
+# add application that handles CO2 sensors
 IMAGE_INSTALL:append = " python3 python3-co2-sensor-daemon"
-# for MQTT server
+# add MQTT server
 IMAGE_INSTALL:append = " mosquitto"
+# add application that handles HTU21D relative humidity and temperature sensor
+IMAGE_INSTALL:append = " htu21d-daemon"
+
+# configuration for rust applications
+set_global_env(){
+    mkdir -p ${IMAGE_ROOTFS}/etc/profile.d
+    echo "export MQTT_DEVICE_NAME=${MACHINE}" > ${IMAGE_ROOTFS}/etc/profile.d/set_global_env.sh
+}
+
+ROOTFS_POSTPROCESS_COMMAND += "set_global_env;"
