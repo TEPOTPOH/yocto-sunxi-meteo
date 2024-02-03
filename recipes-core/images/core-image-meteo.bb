@@ -28,3 +28,6 @@ set_global_env(){
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "set_global_env;"
+
+IMAGE_INSTALL:append = " slint-gui"
+

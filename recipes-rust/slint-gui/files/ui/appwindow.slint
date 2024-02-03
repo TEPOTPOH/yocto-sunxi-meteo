@@ -1,0 +1,343 @@
+import { Button, VerticalBox } from "std-widgets.slint";
+import { StyleMetrics } from "std-widgets.slint";
+
+struct Palette  {
+    menuBar : brush,
+    mainContent : brush,
+    box : brush,
+    lightDisplay : brush,
+    pieChart : brush,
+    roundButton : brush,
+    weekdayBox : brush,
+    text : brush,
+    shadow : brush,
+}
+
+global Skin  {
+    in property <bool> day: !StyleMetrics.dark-color-scheme;
+    out property <Palette> palette : root.day ? {
+       menuBar : #6D7BFB,
+       mainContent :  #fbfbfb,
+       box :   #ffffff,
+       lightDisplay : #ffffff,
+       pieChart : #ffffff,
+       roundButton : #f7f7f7,
+       weekdayBox : #f4f4f4,
+       text : #000,
+       shadow : #0001, // ### added alpha
+    } : {
+       menuBar : #2937A7,
+       mainContent : #040404,
+       box : #000000,
+       lightDisplay : #000000,
+       pieChart : #000000,
+       roundButton : #0a0a0a,
+       weekdayBox : #0c0c0c,
+       text : #fff,
+       shadow : #fff1, // ### added alpha
+    };
+
+    // From Skin::initHints in Skin.cpp
+    out property <length> DefaultFont: 12px;
+    out property <length> TinyFont: 9px;
+    out property <length> SmallFont: 10px;
+    out property <length> MediumFont: 13px;
+    out property <length> LargeFont: 20px;
+    out property <length> HugeFont: 27px; // (also, bold)
+    out property <length> TitleFont: 10px; // (also, bold)
+}
+
+
+component BoxBase inherits Rectangle {
+    background: Skin.palette.box;
+    drop-shadow-offset-x: 6px;
+    drop-shadow-offset-y: 6px;
+    drop-shadow-blur: 6px;
+    drop-shadow-color: Skin.palette.shadow;
+}
+
+component Box inherits BoxBase {
+    in property <string> title;
+
+    VerticalLayout {
+        if (root.title != "") : Text {
+            text <=> root.title;
+            font-size: Skin.TitleFont;
+            font-weight: 700;
+        }
+        spacing: 10px;
+        padding: 15px;
+
+        @children
+    }
+}
+
+component Orbit inherits Box {
+    title: "Orbit";
+    // horizontal-stretch: 1;
+}
+component Clouds inherits Box {
+    title: "Clouds";
+    // horizontal-stretch: 1;
+}
+
+component Outdoor inherits Box {
+    title: "Outdoor";
+    // horizontal-stretch: 1;
+}
+
+
+component PieChartBackground inherits Path {
+    in property <float> thickness;
+    in property <float> inner-radius;
+
+    fill: #aaaaaa40;
+
+    viewbox-width: 100;
+    viewbox-height: 100;
+
+    MoveTo {
+        x: 0;
+        y: 50;
+    }
+    ArcTo {
+        radius-x: 50;
+        radius-y: 50;
+        x: 100;
+        y: 50;
+        sweep: true;
+    }
+    LineTo {
+        x: 100 - root.thickness;
+        y: 50;
+    }
+    ArcTo {
+        radius-x: root.inner-radius;
+        radius-y: root.inner-radius;
+        x: root.thickness;
+        y: 50;
+    }
+}
+
+component PieChartFill inherits Path {
+    in property <float> thickness;
+    in property <float> inner-radius;
+    in property <float> progress;
+    in property <float> start : -0.25;
+    in property <float> end : 0.25;
+
+    private property <float> position: root.start + (root.end - root.start) * root.progress;
+
+    viewbox-width: 100;
+    viewbox-height: 100;
+
+    MoveTo {
+        y: 50 - 50 * cos(-position * 360deg);
+        x: 50 - 50 * sin(-position * 360deg);
+    }
+
+    LineTo {
+        y: 50 - root.inner-radius * cos(-position * 360deg);
+        x: 50 - root.inner-radius * sin(-position * 360deg);
+    }
+
+    // TODO: add colour ranges
+    // MoveTo {
+    //     y: 50 - 50 * cos(-root.start * 360deg);
+    //     x: 50 - 50 * sin(-root.start * 360deg);
+    // }
+
+    // LineTo {
+    //     y: 50 - root.inner-radius * cos(-root.start * 360deg);
+    //     x: 50 - root.inner-radius * sin(-root.start * 360deg);
+    // }
+
+    // ArcTo {
+    //     radius-x: root.inner-radius;
+    //     radius-y: root.inner-radius;
+    //     y: 50 - root.inner-radius*cos(-(position) * 360deg);
+    //     x: 50 - root.inner-radius*sin(-(position) * 360deg);
+    //     sweep: root.progress > 0;
+    //     large-arc: root.progress > 0.5;
+    // }
+
+    // LineTo {
+    //     y: 50 - 50*cos(-(root.start + root.progress) * 360deg);
+    //     x: 50 - 50*sin(-(root.start + root.progress) * 360deg);
+    // }
+
+    // ArcTo {
+    //     radius-x: 50;
+    //     radius-y: 50;
+    //     y: 50 - 50 * cos(-root.start * 360deg);
+    //     x: 50 - 50 * sin(-root.start * 360deg);
+    //     sweep: root.progress < 0;
+    //     large-arc: root.progress > 0.5;
+    // }
+
+    // LineTo {
+    //     y: 50 - 50 * cos(-root.start * 360deg);
+    //     x: 50 - 50 * sin(-root.start * 360deg);
+    // }
+}
+
+component PieChartPainted inherits Rectangle {
+    in property <brush> brush <=> p.fill;
+    in property <float> progress;
+    in property <float> thickness: 15;
+    in property <float> inner-radius: 50 - root.thickness;
+    in property <float> value_max;
+
+    back := PieChartBackground {
+        width: 100%;
+        height: 100%;
+        thickness: root.thickness;
+        inner-radius: root.inner-radius;
+    }
+
+    p := PieChartFill {
+        width: 100%;
+        height: 100%;
+        thickness: root.thickness;
+        inner-radius: root.inner-radius;
+        progress: (root.progress > root.value_max) ? 1 : root.progress/root.value_max;
+    }
+}
+
+export global IndoorAdapter {
+    in property <int> current_temp: 5;
+    in property <int> current_rh: 90;
+    in property <int> current_co2: 3000;
+    // in property <string> title: "Indor";
+    // in property <image> current-temperature-icon: Images.cloud;
+    // in property <string> current-day: "May 6th 2023";
+    // in property <string> current-weather-description: "Very cloudy";
+}
+
+component IndoorData inherits VerticalLayout {
+    in property current-temp <=> IndoorAdapter.current_temp;
+    in property current-rh <=> IndoorAdapter.current_rh;
+    in property current-co2 <=> IndoorAdapter.current_co2;
+
+    padding-left: 25px;
+    padding-top: 10px;
+    padding-right: 10px;
+    padding-bottom: 0px;
+    spacing: 2px;
+
+    for item in [
+        { string: "Temperature",
+          value: current-temp,
+          unit: "C",
+          value_max: 50,
+          color: #ff3122, gradient: @linear-gradient(0deg, #FF5C00, #FF3122)
+        },
+        { string: "Relative Humidiy",
+          value: current-rh,
+          unit: "%",
+          value_max: 100,
+          color: #6776ff, gradient: @linear-gradient(0deg, #6776FF, #6100FF)
+        },
+        { string: "CO2",
+          value: current-co2,
+          unit: "ppm",
+          value_max: 2000,
+          color: #f99055, gradient: @linear-gradient(0deg, #FFCE50, #FF3122)
+        },
+    ] : HorizontalLayout {
+        // padding: 5px;
+        // spacing: 5px;
+        // max-width: 250px;
+        // horizontal-stretch: 1;
+
+        Text {
+            font-size: Skin.LargeFont;
+            text: item.string;
+            vertical-alignment: center;
+            horizontal-alignment: left;
+            width: 170px;
+        }
+
+        HorizontalLayout {
+            PieChartPainted {
+                brush: item.gradient;
+                progress: item.value;
+                value_max: item.value_max;
+
+                Text {
+                    width: 100%;
+                    height: 100%;
+                    vertical-alignment: center;
+                    horizontal-alignment: center;
+                    text: item.value;
+                    color: item.color;
+                    font-size: Skin.LargeFont;
+                }
+            }
+
+            Text {
+                text: item.unit;
+                font-size: Skin.LargeFont;
+                vertical-alignment: center;
+                horizontal-alignment: left;
+            }
+        }
+        // Rectangle {}
+    }
+    @children
+}
+
+component Indoor inherits Box {
+    title: "Indoor";
+    // horizontal-stretch: 1;
+
+    IndoorData {
+        vertical-stretch: 1;
+    }
+}
+
+
+component MainContent inherits VerticalLayout {
+    spacing: 12px;
+
+    GridLayout {
+        spacing: 6px;
+        padding-left: 12px;
+        padding-top: 12px;
+        padding-right: 12px;
+        padding-bottom: 12px;
+
+        Orbit {
+            //rowspan: 2;
+            row: 0; col: 0;
+        }
+        Clouds {
+            row: 0; col: 1;
+        }
+
+        Outdoor {
+            row: 1; col: 0;
+        }
+
+        Indoor {
+            row: 1; col: 1;
+        }
+    }
+}
+
+export component AppWindow inherits Window {
+    always-on-top: true;
+    background: #0b132b;
+    // vertical-stretch: 1;
+    // horizontal-stretch: 1;
+    min-width: 800px;
+    min-height: 500px;
+    max-width: 1024px;
+    max-height: 600px;
+    preferred-width: 1024px;
+    preferred-height: 600px;
+
+    no-frame: true;
+
+    MainContent {}
+}
