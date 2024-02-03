@@ -97,38 +97,25 @@ component PieChartBackground inherits Path {
     viewbox-height: 100;
 
     MoveTo {
-        x: 50;
-        y: 0;
+        x: 0;
+        y: 50;
     }
     ArcTo {
         radius-x: 50;
         radius-y: 50;
-        x: 50;
-        y: 100;
-        sweep: true;
-    }
-    ArcTo {
-        radius-x: 50;
-        radius-y: 50;
-        x: 50;
-        y: 0;
+        x: 100;
+        y: 50;
         sweep: true;
     }
     LineTo {
-        x: 50;
-        y: root.thickness;
+        x: 100 - root.thickness;
+        y: 50;
     }
     ArcTo {
         radius-x: root.inner-radius;
         radius-y: root.inner-radius;
-        x: 50;
-        y: 100 - root.thickness;
-    }
-    ArcTo {
-        radius-x: root.inner-radius;
-        radius-y: root.inner-radius;
-        x: 50;
-        y: root.thickness;
+        x: root.thickness;
+        y: 50;
     }
 }
 
@@ -136,48 +123,62 @@ component PieChartFill inherits Path {
     in property <float> thickness;
     in property <float> inner-radius;
     in property <float> progress;
-    in property <float> start : 0;
+    in property <float> start : -0.25;
+    in property <float> end : 0.25;
+
+    private property <float> position: root.start + (root.end - root.start) * root.progress;
 
     viewbox-width: 100;
     viewbox-height: 100;
 
     MoveTo {
-        y: 50 - 50 * cos(-root.start * 360deg);
-        x: 50 - 50 * sin(-root.start * 360deg);
+        y: 50 - 50 * cos(-position * 360deg);
+        x: 50 - 50 * sin(-position * 360deg);
     }
 
     LineTo {
-        y: 50 - root.inner-radius * cos(-root.start * 360deg);
-        x: 50 - root.inner-radius * sin(-root.start * 360deg);
+        y: 50 - root.inner-radius * cos(-position * 360deg);
+        x: 50 - root.inner-radius * sin(-position * 360deg);
     }
 
-    ArcTo {
-        radius-x: root.inner-radius;
-        radius-y: root.inner-radius;
-        y: 50 - root.inner-radius*cos(-(root.start + root.progress) * 360deg);
-        x: 50 - root.inner-radius*sin(-(root.start + root.progress) * 360deg);
-        sweep: root.progress > 0;
-        large-arc: root.progress > 0.5;
-    }
+    // TODO: add colour ranges
+    // MoveTo {
+    //     y: 50 - 50 * cos(-root.start * 360deg);
+    //     x: 50 - 50 * sin(-root.start * 360deg);
+    // }
 
-    LineTo {
-        y: 50 - 50*cos(-(root.start + root.progress) * 360deg);
-        x: 50 - 50*sin(-(root.start + root.progress) * 360deg);
-    }
+    // LineTo {
+    //     y: 50 - root.inner-radius * cos(-root.start * 360deg);
+    //     x: 50 - root.inner-radius * sin(-root.start * 360deg);
+    // }
 
-    ArcTo {
-        radius-x: 50;
-        radius-y: 50;
-        y: 50 - 50 * cos(-root.start * 360deg);
-        x: 50 - 50 * sin(-root.start * 360deg);
-        sweep: root.progress < 0;
-        large-arc: root.progress > 0.5;
-    }
+    // ArcTo {
+    //     radius-x: root.inner-radius;
+    //     radius-y: root.inner-radius;
+    //     y: 50 - root.inner-radius*cos(-(position) * 360deg);
+    //     x: 50 - root.inner-radius*sin(-(position) * 360deg);
+    //     sweep: root.progress > 0;
+    //     large-arc: root.progress > 0.5;
+    // }
 
-    LineTo {
-        y: 50 - 50 * cos(-root.start * 360deg);
-        x: 50 - 50 * sin(-root.start * 360deg);
-    }
+    // LineTo {
+    //     y: 50 - 50*cos(-(root.start + root.progress) * 360deg);
+    //     x: 50 - 50*sin(-(root.start + root.progress) * 360deg);
+    // }
+
+    // ArcTo {
+    //     radius-x: 50;
+    //     radius-y: 50;
+    //     y: 50 - 50 * cos(-root.start * 360deg);
+    //     x: 50 - 50 * sin(-root.start * 360deg);
+    //     sweep: root.progress < 0;
+    //     large-arc: root.progress > 0.5;
+    // }
+
+    // LineTo {
+    //     y: 50 - 50 * cos(-root.start * 360deg);
+    //     x: 50 - 50 * sin(-root.start * 360deg);
+    // }
 }
 
 component PieChartPainted inherits Rectangle {
@@ -185,6 +186,7 @@ component PieChartPainted inherits Rectangle {
     in property <float> progress;
     in property <float> thickness: 15;
     in property <float> inner-radius: 50 - root.thickness;
+    in property <float> value_max;
 
     back := PieChartBackground {
         width: 100%;
@@ -198,12 +200,12 @@ component PieChartPainted inherits Rectangle {
         height: 100%;
         thickness: root.thickness;
         inner-radius: root.inner-radius;
-        progress: root.progress;
+        progress: (root.progress > root.value_max) ? 1 : root.progress/root.value_max;
     }
 }
 
 export global IndoorAdapter {
-    in property <int> current_temp: 55;
+    in property <int> current_temp: 5;
     in property <int> current_rh: 90;
     in property <int> current_co2: 3000;
     // in property <string> title: "Indor";
@@ -218,18 +220,33 @@ component IndoorData inherits VerticalLayout {
     in property current-co2 <=> IndoorAdapter.current_co2;
 
     padding-left: 25px;
-    padding-top: 25px;
-    padding-right: 25px;
+    padding-top: 10px;
+    padding-right: 10px;
     padding-bottom: 0px;
     spacing: 2px;
 
     for item in [
-        { string: "Temperature", value: current-temp, unit: "C", color: #ff3122, gradient: @linear-gradient(0deg, #FF5C00, #FF3122) },
-        { string: "Relative Humidiy", value: current-rh, unit: "%", color: #6776ff, gradient: @linear-gradient(0deg, #6776FF, #6100FF) },
-        { string: "CO2", value: current-co2, unit: "ppm", color: #f99055, gradient: @linear-gradient(0deg, #FFCE50, #FF3122) },
+        { string: "Temperature",
+          value: current-temp,
+          unit: "C",
+          value_max: 50,
+          color: #ff3122, gradient: @linear-gradient(0deg, #FF5C00, #FF3122)
+        },
+        { string: "Relative Humidiy",
+          value: current-rh,
+          unit: "%",
+          value_max: 100,
+          color: #6776ff, gradient: @linear-gradient(0deg, #6776FF, #6100FF)
+        },
+        { string: "CO2",
+          value: current-co2,
+          unit: "ppm",
+          value_max: 2000,
+          color: #f99055, gradient: @linear-gradient(0deg, #FFCE50, #FF3122)
+        },
     ] : HorizontalLayout {
-        padding: 5px;
-        spacing: 5px;
+        // padding: 5px;
+        // spacing: 5px;
         // max-width: 250px;
         // horizontal-stretch: 1;
 
@@ -244,6 +261,8 @@ component IndoorData inherits VerticalLayout {
         HorizontalLayout {
             PieChartPainted {
                 brush: item.gradient;
+                progress: item.value;
+                value_max: item.value_max;
 
                 Text {
                     width: 100%;
@@ -307,6 +326,7 @@ component MainContent inherits VerticalLayout {
 }
 
 export component AppWindow inherits Window {
+    always-on-top: true;
     background: #0b132b;
     // vertical-stretch: 1;
     // horizontal-stretch: 1;
