@@ -23,11 +23,11 @@ IMAGE_INSTALL:append = " htu21d-daemon"
 
 # configuration for rust applications
 set_global_env(){
-    mkdir -p ${IMAGE_ROOTFS}/etc/profile.d
-    echo "export MQTT_DEVICE_NAME=${MACHINE}" > ${IMAGE_ROOTFS}/etc/profile.d/set_global_env.sh
+    mkdir -p ${IMAGE_ROOTFS}${sysconfdir}/profile.d
+    echo "export MQTT_DEVICE_NAME=${MACHINE}" > ${IMAGE_ROOTFS}${sysconfdir}/profile.d/set_global_env.sh
 }
-
 ROOTFS_POSTPROCESS_COMMAND += "set_global_env;"
 
+# add GUI application
 IMAGE_INSTALL:append = " slint-gui"
 

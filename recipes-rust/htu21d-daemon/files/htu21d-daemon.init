@@ -13,6 +13,8 @@ umask 022
 
 . @SYSCONFDIR@/init.d/functions
 
+@SETUPENV@
+
 export PATH="${PATH:+$PATH:}@BINDIR@"
 
 case "$1" in

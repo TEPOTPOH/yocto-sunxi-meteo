@@ -6,7 +6,7 @@ Hardware:
  - cubieboard1: Allwinner A10 (sun4i), HDMI, Ethernet LAN
  - CO2 sensor MH-Z19b
  - Temperature and Relative Humidiy sensor HTU21D
- - TODO: 7 inch IPS LCD Wisecoco 1024x600, HDMI, USB touch
+ - 7 inch IPS LCD Wisecoco 1024x600, HDMI, USB touch
  - TODO: WIFI
 
 TODO: Scheme of hardware connections
@@ -15,10 +15,10 @@ Software:
  - Yocto linux, based on core image Sato
  - mainline kernel
  - mainline U-boot
- - MH-Z19b sensor daemon based on python3
+ - MH-Z19b CO2 sensor daemon (python3)
  - Mosquitoo - MQTT broker
- - HTU21D sensor daemon based on rust
- - TODO: Graphics - ???
+ - HTU21D Temperature and Relative Humidiy sensor daemon (rust)
+ - Graphics - Slint GUI (rust)
 
 
 meta-meteo layer
@@ -42,8 +42,18 @@ Dependencies
   meta-rust-bin        "master" https://github.com/rust-embedded/meta-rust-bin
 
 
-TODO: Description of modules
+Description of modules
 =======
+
+- recipes-connecivity/mosquitto - MQTT broker
+- recipes-kernel/linux - patched DTS in mainline linux for activate UART4 for CO2 sensor
+- recipes-python/python3-co2-sensor-daemon - Python application to read sensors data and send it to MQTT broker
+-               /python3-mhz19 - Python module for interact with MH-Z19 CO2 sensor.
+                                 Pathed in order to get rid of RPI dependencies.
+- recipes-rust/htu21d-daemon - Rust daemon for TE HTU21D relative humidity and temperature sensor.
+                               Get data from sensor and send it to MQTT broker
+-             /slint-gui - GUI for meteostation based on Slint - Rust GUI framework
+- recipes-sato/matchbox-sato - custom session for Matchbox desktop manager to startup main GUI
 
 
 HOW TO USE

@@ -5,6 +5,10 @@
 
 . /etc/formfactor/config
 
+xset s off         # don't activate screensaver
+xset -dpms         # disable DPMS (Energy Star) features.
+xset s noblank     # don't blank the video device
+
 SHOWCURSOR="no"
 
 if [ "$HAVE_KEYBOARD" = "1" ]; then
@@ -27,6 +31,6 @@ END_APPLETS=openmoko-panel-gsm,$END_APPLETS # feature-phone
 
 #matchbox-panel --start-applets $START_APPLETS --end-applets $END_APPLETS &
 
-@APPNAME@ &
+@APPNAME@ > /dev/null &
 
 exec matchbox-window-manager -theme Sato -use_cursor $SHOWCURSOR $@

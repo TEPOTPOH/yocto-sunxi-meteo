@@ -22,6 +22,8 @@ SRC_URI += "file://htu21d-daemon.init"
 
 inherit systemd update-rc.d
 
+setup_env_cmd = ". ${sysconfdir}/profile.d/set_global_env.sh"
+
 do_install:append () {
     install -d ${D}${systemd_unitdir}/system/
     install -m 0644 ${S}/${PN}.service ${D}${systemd_unitdir}/system/${PN}.service
@@ -36,6 +38,7 @@ do_install:append () {
         -e 's,@LOCALSTATEDIR@,${localstatedir},g' \
         -e 's,@SYSCONFDIR@,${sysconfdir},g' \
         -e 's,@DMNWORKDIR@,${USRBINPATH},g' \
+        -e 's,@SETUPENV@,${setup_env_cmd},g' \
         ${D}${sysconfdir}/init.d/${PN}
 }
 
