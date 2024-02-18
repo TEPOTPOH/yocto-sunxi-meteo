@@ -55,7 +55,7 @@ export global SpaceLogic {
     }
     public pure function geo_storm_to_string(val: GeoStrom) -> string {
         if (val == GeoStrom.G0-NoStorm) {
-            return "G0";
+            return "NS";
         } else if (val ==  GeoStrom.G1-Minor) {
             return "G1";
         } else if (val == GeoStrom.G2-Moderate) {
@@ -98,7 +98,7 @@ export global SpaceLogic {
     }
     public pure function solar_storm_to_string(val: SolarRadiationStrom) -> string {
         if (val == SolarRadiationStrom.S0-NoStorm) {
-            return "S0";
+            return "NS";
         } else if (val ==  SolarRadiationStrom.S1-Minor) {
             return "S1";
         } else if (val == SolarRadiationStrom.S2-Moderate) {

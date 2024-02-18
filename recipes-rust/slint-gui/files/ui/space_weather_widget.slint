@@ -78,14 +78,14 @@ export component SpaceWeatherDataWidget inherits HorizontalLayout {
 
         GridLayout {
             spacing: 4px;
-            padding-top: 10px;
-            padding-bottom: 15px;
+            padding-top: 6px;
+            padding-bottom: 10px;
             padding-left: 6px;
             padding-right: 6px;
 
             Text {
                 row: 0; colspan: 2;
-                text: "Now";
+                text: "  Storms\nNow";
                 horizontal-alignment: center;
                 font-weight: 500;
                 font-size: Skin.MediumFont;
@@ -102,7 +102,7 @@ export component SpaceWeatherDataWidget inherits HorizontalLayout {
             }
 
             Text {
-                colspan: 2; row: 2;
+                row: 2; colspan: 2;
                 text: "3H forecast";
                 horizontal-alignment: center;
                 font-weight: 500;
@@ -120,7 +120,7 @@ export component SpaceWeatherDataWidget inherits HorizontalLayout {
             }
 
             Text {
-                colspan: 2; row: 4;
+                row: 4; colspan: 2;
                 text: "24H forecast";
                 horizontal-alignment: center;
                 font-weight: 500;
