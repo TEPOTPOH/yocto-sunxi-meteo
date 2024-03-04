@@ -61,25 +61,25 @@ component VerticalAxis inherits Path {
     }
 }
 
+export struct KpIndex {
+    hour: string,
+    kp: float,
+}
+
 export component KpIndexBarChart {
-    in property <[float]> chart_data;
+    in property <[KpIndex]> chart_data;
     in property <float> min;
     in property <float> max;
     in property <bool> active : true;
-    in property <int> current_hour;
 
     private property <int> chart_data_len: chart_data.length;
-    private property <int> current_time_frame: near_int_division(current_hour, 3);
-
-    public pure function near_int_division(x: float, divider: float) -> float {
-        return floor(x / divider) * divider;
-    }
 
     protected pure function setbarcolor(val: float) -> color {
         return SpaceLogic.geo_storm_to_color(SpaceLogic.kp_to_geo_storm(val));
     }
 
     hl := HorizontalLayout {
+        padding-right: 10px;
         spacing: 1px;
 
         verticalScale := VerticalLayout {
@@ -90,7 +90,7 @@ export component KpIndexBarChart {
             for kp_value in kp_max + 1: Text {
                 private property <int> kp_scale_val: kp_max - kp_value;
                 text: kp_scale_val;
-                color: round(chart-data[chart-data-len - 1]) == kp_scale_val ? Skin.palette.text : Skin.palette.secondaryText;
+                color: round(chart_data[chart-data-len - 1].kp) == kp_scale_val ? Skin.palette.text : Skin.palette.secondaryText;
                 font-size: Skin.MediumFont;
                 horizontal-alignment: right;
                 vertical-stretch: 1;
@@ -119,7 +119,7 @@ export component KpIndexBarChart {
 
             states [
                 active when active : {
-                    display-value: value;
+                    display-value: value.kp;
 
                     in {
                         animate display-value { duration: 250ms; easing: ease-in-out; }
@@ -133,12 +133,11 @@ export component KpIndexBarChart {
             }
 
             Text {
-                private property <int> bar_hour_temp: current_time_frame - (chart_data_len - index - 1) * 3;
-                private property <int> bar_hour: bar_hour_temp >= 0 ? bar_hour_temp : 24 + bar_hour_temp;
-                text: bar_hour < 10 ? "0" + bar_hour : bar_hour;
-                horizontal-alignment: center;
+                text: value.hour;
+                horizontal-alignment: right;
                 font-size: Skin.MediumFont;
                 color: index == chart_data_len -1 ? Skin.palette.text: Skin.palette.secondaryText;
+                x: + 10px;
             }
         }
     }

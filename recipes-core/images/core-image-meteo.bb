@@ -2,7 +2,7 @@ DESCRIPTION = "Image based on Sato for meteo station with display."
 
 require recipes-sato/images/core-image-sato.bb
 
-IMAGE_INSTALL:append = " i2c-tools ffmpeg v4l-utils nano bc apt"
+IMAGE_INSTALL:append = " i2c-tools ffmpeg v4l-utils nano bc ntp"
 
 DISTRO_FEATURES_DEFAULT:remove = " bluetooth 3g nfc"
 
@@ -30,4 +30,7 @@ ROOTFS_POSTPROCESS_COMMAND += "set_global_env;"
 
 # add GUI application
 IMAGE_INSTALL:append = " slint-gui"
+
+# add weather-fetcher daemon
+IMAGE_INSTALL:append = " weather-fetcher"
 

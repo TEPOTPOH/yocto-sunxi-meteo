@@ -1,17 +1,18 @@
 extern crate rumqttc;
 extern crate json;
 extern crate envconfig;
+extern crate chrono;
 
 use std::thread;
 use std::sync::Arc;
 use std::time::Duration;
 use rumqttc::{MqttOptions, Event, Incoming, Client, QoS};
 use json::*;
-// use std::sync::mpsc;
-// use std::sync::mpsc::Receiver;
 use envconfig::Envconfig;
 use std::collections::HashMap;
 use slint::*;
+use chrono::{NaiveDateTime};
+use std::rc::Rc;
 
 slint::include_modules!();
 
@@ -47,15 +48,12 @@ fn main() {
     let (mut client, mut connection) = Client::new(mqttoptions, 10);
 
     let mut topic_gui_map: GuiCallbackMap = HashMap::new();
-    let full_topic = make_full_topic("htu21d", &config);
-    topic_gui_map.insert(full_topic, update_indoor_t_rh);
-    let full_topic = make_full_topic("mhz19", &config);
-    topic_gui_map.insert(full_topic, update_indoor_co2);
+    topic_gui_map.insert(make_full_topic("htu21d", &config), update_indoor_t_rh);
+    topic_gui_map.insert(make_full_topic("mhz19", &config), update_indoor_co2);
+    topic_gui_map.insert(make_full_topic("nasa_kp", &config), update_space_weather_kp);
 
-    // let (sender, receiver) = mpsc::channel();
-
-    let topic_gui_map_arc = Arc::new(topic_gui_map.clone());
-    let topic_gui_map_copy = Arc::clone(&topic_gui_map_arc);
+    let topic_gui_map_arc = Arc::new(topic_gui_map);
+    let topic_gui_map_arc2 = topic_gui_map_arc.clone();
 
     let ui = AppWindow::new().unwrap();
     let ui_weak = ui.as_weak();
@@ -68,19 +66,15 @@ fn main() {
             println!("MQTT notification = {:?}", notification);
 
             if let Ok(Event::Incoming(Incoming::Publish(packet))) = notification {
-                // packet.payload.as_ref()
-
                 let topic = packet.topic.clone();
                 println!("topic = {:?}", topic.as_str());
-                if topic_gui_map_copy.contains_key(topic.as_str()) {
+                if topic_gui_map_arc.contains_key(topic.as_str()) {
                     let json_payload = String::from_utf8_lossy(&packet.payload);
                     println!("json_payload = {:?}", json_payload);
                     let payload: json::JsonValue = json::parse(json_payload.as_ref()).unwrap();
-                    // sender.send((topic.clone().to_string(), payload.clone())).unwrap();
-
                     let new_ui_weak = ui_weak.clone();
 
-                    match topic_gui_map_copy.get(topic.as_str()) {
+                    match topic_gui_map_arc.get(topic.as_str()) {
                         Some(func) => {
                             let func_copy = func.clone();
                             thread::spawn(move || {
@@ -95,7 +89,7 @@ fn main() {
         }
     });
 
-    for topic in topic_gui_map.keys() {
+    for topic in topic_gui_map_arc2.keys() {
         client.subscribe(topic, QoS::AtLeastOnce).unwrap();
     }
 
@@ -110,37 +104,46 @@ fn make_full_topic(sensor_name: &str, config: &Config) -> String {
 }
 
 fn update_indoor_t_rh(window_weak: Weak<AppWindow>, json_data: JsonValue) {
-    window_weak
-        .upgrade_in_event_loop(move |window| {
-            // TODO: json_data.has_key("")
-            let mut value = 0;
-            if let Some(val) = json_data["temperature"].as_i32() {
-                value = val;
-            } else {
-                value = 0;
-            }
-            window.global::<IndoorAdapter>().set_current_temp(value);
-            let mut value = 0;
-            if let Some(val) = json_data["rh"].as_i32() {
-                value = val;
-            } else {
-                value = 0;
-            }
-            window.global::<IndoorAdapter>().set_current_rh(value);
-        })
-        .unwrap();
+    window_weak.upgrade_in_event_loop(move |window| {
+        // TODO: json_data.has_key("")
+        let mut value = json_data["temperature"].as_i32().unwrap_or(0);
+        window.global::<IndoorAdapter>().set_current_temp(value);
+        let mut value = json_data["rh"].as_i32().unwrap_or(0);
+        window.global::<IndoorAdapter>().set_current_rh(value);
+    }).unwrap();
 }
 
 fn update_indoor_co2(window_weak: Weak<AppWindow>, json_data: JsonValue) {
-    window_weak
-    .upgrade_in_event_loop(move |window| {
-        let mut value = 0;
-        if let Some(val) = json_data["co2"].as_i32() {
-            value = val;
-        } else {
-            value = 0;
-        }
+    window_weak.upgrade_in_event_loop(move |window| {
+        let mut value = json_data["co2"].as_i32().unwrap_or(0);
         window.global::<IndoorAdapter>().set_current_co2(value);
-    })
-    .unwrap();
+    }).unwrap();
+}
+
+fn convert_datetime(input: &str, in_format: &str, out_format: &str, offset_hours: i64) -> String {
+    let mut datetime = NaiveDateTime::parse_from_str(input, in_format).expect("Failed to parse datetime");
+    datetime += chrono::Duration::hours(offset_hours);
+    return datetime.format(out_format).to_string();
+}
+
+fn update_space_weather_kp(window_weak: Weak<AppWindow>, json_data: JsonValue) {
+    window_weak.upgrade_in_event_loop(move |window| {
+        if !json_data.is_array() {
+            println!("Format of received data is invalid! Should be array of elements");
+            return;
+        }
+        let chart_data = VecModel::default();
+        for element in json_data.members() {
+            if !element.is_object() {
+                println!("Format of received data element is invalid! Should be object");
+                continue;
+            }
+            chart_data.push(KpIndex {
+                hour: convert_datetime(element["time_tag"].as_str().unwrap_or("00:00 01-01-2024"),
+                                       "%H:%M %d-%m-%Y", "%H", 0).into(),
+                kp: element["kp"].as_f32().unwrap_or(0.0),
+            });
+        }
+        window.global::<SpaceWeatherAdapter>().set_kp_index_data(Rc::new(chart_data).into());
+    }).unwrap();
 }

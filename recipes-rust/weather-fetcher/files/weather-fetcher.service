@@ -1,0 +1,15 @@
+[Unit]
+Description=Fetch weather and post to mqtt broker
+After=rc-local.service
+
+[Service]
+WorkingDirectory=@DMNWORKDIR@/
+User=pi
+ExecStart=@DMNWORKDIR@/weather-fetcher
+Restart=always
+RestartSec=30
+Type=simple
+PIDFile=@LOCALSTATEDIR@/run/weather-fetcher.pid
+
+[Install]
+WantedBy=multi-user.target
