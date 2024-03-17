@@ -31,6 +31,9 @@ END_APPLETS=openmoko-panel-gsm,$END_APPLETS # feature-phone
 
 #matchbox-panel --start-applets $START_APPLETS --end-applets $END_APPLETS &
 
-@APPNAME@ > /dev/null &
+export SLINT_BACKEND=@BACKEND_TYPE@
+export SLINT_DEBUG_PERFORMANCE=refresh_lazy,overlay
+
+@APPNAME@ > /var/log/@APPNAME@.log 2>&1 &
 
 exec matchbox-window-manager -theme Sato -use_cursor $SHOWCURSOR $@

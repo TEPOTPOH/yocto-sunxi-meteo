@@ -1,8 +1,10 @@
 import { Skin } from "theme.slint";
 import { SpaceWeatherDataWidget, SpaceWeatherAdapter, KpIndex } from "space_weather_widget.slint";
 import { IndoorDataWidget, IndoorAdapter } from "indoor_widget.slint";
+import { AnimationTestBox } from "animation_test.slint";
 
 export { IndoorAdapter, SpaceWeatherAdapter }
+
 
 component BoxBase inherits Rectangle {
     background: Skin.palette.boxBgnd;
@@ -44,6 +46,7 @@ component Clouds inherits TitledBox {
         horizontal-alignment: center;
         font-size: Skin.LargeFont;
     }
+    AnimationTestBox {}
 }
 
 component Outdoor inherits TitledBox {
@@ -65,17 +68,10 @@ component MainContent {
 
     Rectangle {
         background: Skin.palette.mainContent;
-        animate background {
-            duration: 500ms;
-        }
     }
 
     GridLayout {
         spacing: 2px;
-        padding-left: 6px;
-        padding-top: 6px;
-        padding-right: 6px;
-        padding-bottom: 6px;
 
         SpaceWeatherWidget {
             row: 0; col: 0;

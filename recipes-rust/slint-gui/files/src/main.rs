@@ -63,7 +63,7 @@ fn main() {
         // The `EventLoop`/`Connection` must be regularly polled(`.next()` in case of `Connection`) in order
         //  to send, receive and process packets from the broker, i.e. move ahead.
         for (_, notification) in connection.iter().enumerate() {
-            println!("MQTT notification = {:?}", notification);
+            // println!("MQTT notification = {:?}", notification);
 
             if let Ok(Event::Incoming(Incoming::Publish(packet))) = notification {
                 let topic = packet.topic.clone();
@@ -72,15 +72,10 @@ fn main() {
                     let json_payload = String::from_utf8_lossy(&packet.payload);
                     println!("json_payload = {:?}", json_payload);
                     let payload: json::JsonValue = json::parse(json_payload.as_ref()).unwrap();
-                    let new_ui_weak = ui_weak.clone();
 
                     match topic_gui_map_arc.get(topic.as_str()) {
                         Some(func) => {
-                            let func_copy = func.clone();
-                            thread::spawn(move || {
-                                func_copy(new_ui_weak, payload);
-                                // thread::sleep(Duration::from_millis(500));
-                            });
+                            func(ui_weak.clone(), payload);
                         },
                         None => println!("Received unknown topic"),
                     }
@@ -95,7 +90,7 @@ fn main() {
 
     ui.run().unwrap();
 
-    let res = thread_join_handle.join();
+    let _res = thread_join_handle.join();
 }
 
 fn make_full_topic(sensor_name: &str, config: &Config) -> String {
@@ -106,16 +101,16 @@ fn make_full_topic(sensor_name: &str, config: &Config) -> String {
 fn update_indoor_t_rh(window_weak: Weak<AppWindow>, json_data: JsonValue) {
     window_weak.upgrade_in_event_loop(move |window| {
         // TODO: json_data.has_key("")
-        let mut value = json_data["temperature"].as_i32().unwrap_or(0);
+        let value = json_data["temperature"].as_i32().unwrap_or(0);
         window.global::<IndoorAdapter>().set_current_temp(value);
-        let mut value = json_data["rh"].as_i32().unwrap_or(0);
+        let value = json_data["rh"].as_i32().unwrap_or(0);
         window.global::<IndoorAdapter>().set_current_rh(value);
     }).unwrap();
 }
 
 fn update_indoor_co2(window_weak: Weak<AppWindow>, json_data: JsonValue) {
     window_weak.upgrade_in_event_loop(move |window| {
-        let mut value = json_data["co2"].as_i32().unwrap_or(0);
+        let value = json_data["co2"].as_i32().unwrap_or(0);
         window.global::<IndoorAdapter>().set_current_co2(value);
     }).unwrap();
 }

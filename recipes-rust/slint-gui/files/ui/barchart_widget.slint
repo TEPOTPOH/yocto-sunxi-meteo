@@ -8,6 +8,7 @@ import { SpaceLogic } from "space_logic.slint";
 component Bar {
     in property <length> bar-height;
     in property <color> bar-color;
+    in property <float> bar-value;
 
     horizontal-stretch: 1;
 
@@ -22,6 +23,19 @@ component Bar {
             y: parent.height - self.height;
             background: bar-color;
         }
+    }
+    private property <float> fract_val: bar-value - floor(bar-value);
+    protected pure function convert_kp_val(val: float, fract_val: float) -> string {
+        if (fract_val < 0.33) {
+            return floor(val);
+        } else if (fract_val < 0.67) {
+            return floor(val) + "+";
+        }
+        return (floor(val) + 1) + "-";
+    }
+    if bar-value >= 4.67: Text {
+        text: convert_kp_val(bar-value, fract_val);
+        y: parent.height - bar-height - 15px;
     }
 }
 
@@ -122,7 +136,7 @@ export component KpIndexBarChart {
                     display-value: value.kp;
 
                     in {
-                        animate display-value { duration: 250ms; easing: ease-in-out; }
+                        animate display-value { duration: 500ms; easing: ease-in-out; }
                     }
                 }
             ]
@@ -130,6 +144,7 @@ export component KpIndexBarChart {
             Bar {
                 bar-height: parent.height * (display-value - root.min) / (root.max - root.min);
                 bar-color: setbarcolor(display-value);
+                bar-value: display-value;
             }
 
             Text {
