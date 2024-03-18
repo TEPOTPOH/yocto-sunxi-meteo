@@ -27,9 +27,9 @@ do_compile[network] = "1"
 # - (optional) Qt will be used when qmake is found in PATH
 # - FFMPEG library clang libavcodec-dev libavformat-dev libavutil-dev libavfilter-dev libavdevice-dev libasound2-dev pkg-config
 # xcb and xcbcommon aren't needed if you are only using backend-winit-wayland without backend-winit-x11.
-RDEPENDS:${PN} += "libudev libxcb libxkbcommon libxkbcommon-x11 fontconfig ffmpeg"
+RDEPENDS:${PN} += "libudev libxcb libxkbcommon fontconfig ffmpeg"
 
-do_configure:prepend() {
+do_configure:append() {
     sed -i -e 's,@BACKEND_TYPE@,${BACKEND_TYPE},g' \
-        -e 's,@RENDER_TYPE@,${RENDER_TYPE},g' ${D}/../Cargo.toml
+        -e 's,@RENDER_TYPE@,${RENDER_TYPE},g' ${S}/Cargo.toml
 }
