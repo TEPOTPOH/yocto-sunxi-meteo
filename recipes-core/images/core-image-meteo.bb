@@ -2,7 +2,7 @@ DESCRIPTION = "Image based on Sato for meteo station with display."
 
 require recipes-sato/images/core-image-sato.bb
 
-IMAGE_INSTALL:append = " ntp"
+IMAGE_INSTALL:append = " ntp tzdata"
 
 export IMAGE_BASENAME = "core-image-meteo"
 

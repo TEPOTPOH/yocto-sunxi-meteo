@@ -47,7 +47,9 @@ Description of modules
 
 - recipes-connecivity/mosquitto - MQTT broker
 - recipes-core/psplash - Startup logo
-- recipes-graphics/xorg-lib - Fix original recipe issue: allow rdepend on libxkbcommon-x11 module. Slint depend on this module
+- recipes-extended/timezone - Setup timezone in system
+- recipes-graphics/xorg-lib - Fix original recipe issue: include libxkbcommon-x11 module when rdepend on libxkbcommon.
+                              Slint depends on this module libxkbcommon-11
 - recipes-kernel/linux - patched DTS in mainline linux for activate UART4 for CO2 sensor
 - recipes-python/python3-co2-sensor-daemon - Python application to read sensors data and send it to MQTT broker
 -               /python3-mhz19 - Python module for interact with MH-Z19 CO2 sensor.

@@ -33,9 +33,12 @@ struct Config {
 
     #[envconfig(from = "MQTT_DEVICE_NAME", default = "unknown")]
     pub mqtt_device_name: String,
+
+    #[envconfig(from = "DEFAULT_TIMEZONE_OFFSET_H", default = "3")]
+    pub timezone_offset_h: i8,
 }
 
-type GuiCallbackMap = HashMap<String, fn(Weak<AppWindow>, JsonValue) -> ()>;
+type GuiCallbackMap = HashMap<String, fn(Weak<AppWindow>, JsonValue, Arc<Config>) -> ()>;
 
 fn main() {
     let config = Config::init_from_env().unwrap();
@@ -58,6 +61,8 @@ fn main() {
     let ui = AppWindow::new().unwrap();
     let ui_weak = ui.as_weak();
 
+    let config_arc = Arc::new(config);
+
     // Connection handler thread
     let thread_join_handle = thread::spawn(move || {
         // The `EventLoop`/`Connection` must be regularly polled(`.next()` in case of `Connection`) in order
@@ -75,7 +80,7 @@ fn main() {
 
                     match topic_gui_map_arc.get(topic.as_str()) {
                         Some(func) => {
-                            func(ui_weak.clone(), payload);
+                            func(ui_weak.clone(), payload, config_arc.clone());
                         },
                         None => println!("Received unknown topic"),
                     }
@@ -98,7 +103,7 @@ fn make_full_topic(sensor_name: &str, config: &Config) -> String {
     return full_topic;
 }
 
-fn update_indoor_t_rh(window_weak: Weak<AppWindow>, json_data: JsonValue) {
+fn update_indoor_t_rh(window_weak: Weak<AppWindow>, json_data: JsonValue, _config: Arc<Config>) {
     window_weak.upgrade_in_event_loop(move |window| {
         // TODO: json_data.has_key("")
         let value = json_data["temperature"].as_i32().unwrap_or(0);
@@ -108,7 +113,7 @@ fn update_indoor_t_rh(window_weak: Weak<AppWindow>, json_data: JsonValue) {
     }).unwrap();
 }
 
-fn update_indoor_co2(window_weak: Weak<AppWindow>, json_data: JsonValue) {
+fn update_indoor_co2(window_weak: Weak<AppWindow>, json_data: JsonValue, _config: Arc<Config>) {
     window_weak.upgrade_in_event_loop(move |window| {
         let value = json_data["co2"].as_i32().unwrap_or(0);
         window.global::<IndoorAdapter>().set_current_co2(value);
@@ -121,7 +126,7 @@ fn convert_datetime(input: &str, in_format: &str, out_format: &str, offset_hours
     return datetime.format(out_format).to_string();
 }
 
-fn update_space_weather_kp(window_weak: Weak<AppWindow>, json_data: JsonValue) {
+fn update_space_weather_kp(window_weak: Weak<AppWindow>, json_data: JsonValue, config: Arc<Config>) {
     window_weak.upgrade_in_event_loop(move |window| {
         if !json_data.is_array() {
             println!("Format of received data is invalid! Should be array of elements");
@@ -135,7 +140,7 @@ fn update_space_weather_kp(window_weak: Weak<AppWindow>, json_data: JsonValue) {
             }
             chart_data.push(KpIndex {
                 hour: convert_datetime(element["time_tag"].as_str().unwrap_or("00:00 01-01-2024"),
-                                       "%H:%M %d-%m-%Y", "%H", 0).into(),
+                                       "%H:%M %d-%m-%Y", "%H", config.timezone_offset_h.into()).into(),
                 kp: element["kp"].as_f32().unwrap_or(0.0),
             });
         }
