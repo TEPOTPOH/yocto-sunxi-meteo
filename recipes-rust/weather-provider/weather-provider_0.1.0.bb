@@ -4,20 +4,20 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 
 inherit cargo_bin
 
-SRC_URI += "\
+DEPENDS += "openssl"
+
+SRC_URI:append = " \
     file://src \
     file://Cargo.toml \
 "
+# Configure startup
+# daemon startup configs for systemd and sysvinit. Tested only config for sysvinit.
+SRC_URI:append = " file://${BPN}.service"
+SRC_URI:append = " file://${BPN}.init"
 
 S = "${WORKDIR}"
 
 do_compile[network] = "1"
-
-
-# Configure startup
-# daemon startup configs for systemd and sysvinit. Tested only config for sysvinit.
-SRC_URI += "file://${BPN}.service"
-SRC_URI += "file://${BPN}.init"
 
 inherit systemd update-rc.d
 
