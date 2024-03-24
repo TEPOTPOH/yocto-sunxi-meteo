@@ -5,11 +5,11 @@ After=rc-local.service
 [Service]
 WorkingDirectory=@DMNWORKDIR@/
 User=pi
-ExecStart=@DMNWORKDIR@/weather-fetcher
+ExecStart=@DMNWORKDIR@/weather-provider
 Restart=always
 RestartSec=30
 Type=simple
-PIDFile=@LOCALSTATEDIR@/run/weather-fetcher.pid
+PIDFile=@LOCALSTATEDIR@/run/weather-provider.pid
 
 [Install]
 WantedBy=multi-user.target

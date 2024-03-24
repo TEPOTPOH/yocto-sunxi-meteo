@@ -177,7 +177,7 @@ async fn send_kp(mut kp_release: Vec<KpIndex>, last_kp_inst: KpIndex, config: &C
 }
 
 async fn init_mqtt(config: &Config) -> Result<Arc<Mutex<Client>>, String> {
-    let mut mqttoptions = MqttOptions::new("weather-fetcher", &config.mqtt_host, config.mqtt_port);
+    let mut mqttoptions = MqttOptions::new("weather-provider", &config.mqtt_host, config.mqtt_port);
     mqttoptions.set_keep_alive(Duration::from_secs(config.mqtt_keep_alive.into()));
     println!("Connecting to MQTT broker...");
     let (mut client, mut connection) = Client::new(mqttoptions, 10);

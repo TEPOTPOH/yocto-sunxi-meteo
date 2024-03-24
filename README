@@ -57,7 +57,7 @@ Description of modules
 - recipes-rust/htu21d-daemon - Rust daemon for TE HTU21D relative humidity and temperature sensor.
                                Get data from sensor and send it to MQTT broker
 -             /slint-gui - GUI for meteostation based on Slint - Rust GUI framework, fetch data from MQTT broker
--             /weather-fetcher - Weather data provider, send data to MQTT broker
+-             /weather-provider - Weather data provider, send data to MQTT broker
 - recipes-sato/matchbox-sato - Custom session for Matchbox desktop manager to startup main GUI
 - recipes-support/ntp - Configure NTP service in order to have real time in system. Need for HTTPS requests.
 

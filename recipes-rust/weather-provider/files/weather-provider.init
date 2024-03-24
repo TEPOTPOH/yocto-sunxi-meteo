@@ -4,8 +4,8 @@
 
 set -e
 
-PIDFILE=@LOCALSTATEDIR@/run/weather-fetcher.pid
-DAEMON=@DMNWORKDIR@/weather-fetcher
+PIDFILE=@LOCALSTATEDIR@/run/weather-provider.pid
+DAEMON=@DMNWORKDIR@/weather-provider
 
 test -x ${DAEMON} || exit 0
 
@@ -19,17 +19,17 @@ export PATH="${PATH:+$PATH:}@BINDIR@"
 
 case "$1" in
     start)
-        echo "Starting weather-fetcher daemon" "weather-fetcher"
+        echo "Starting weather-provider daemon" "weather-provider"
         if start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --exec ${DAEMON} ; then
-            echo "weather-fetcher daemon emergency has stop"
+            echo "weather-provider daemon emergency has stop"
             exit 0
         else
-            echo "weather-fetcher daemon emergency has stop with error status"
+            echo "weather-provider daemon emergency has stop with error status"
             exit 1
         fi
         ;;
     stop)
-        echo "Stopping weather-fetcher daemon" "weather-fetcher"
+        echo "Stopping weather-provider daemon" "weather-provider"
         if start-stop-daemon --stop --oknodo --pidfile ${PIDFILE}; then
             rm -f ${PIDFILE}
             exit 0
@@ -38,7 +38,7 @@ case "$1" in
         fi
         ;;
     restart)
-        echo "Restarting weather-fetcher daemon" "weather-fetcher"
+        echo "Restarting weather-provider daemon" "weather-provider"
         if start-stop-daemon --stop  --oknodo --retry 30 --pidfile ${PIDFILE}; then
             rm -f ${PIDFILE}
         fi

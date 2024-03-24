@@ -1,7 +1,8 @@
-DESCRIPTION = "Image based on Sato for meteo station with display."
+DESCRIPTION = "Image based on Sato for meteo station with LCD display"
 
 require recipes-sato/images/core-image-sato.bb
 
+# setup timezone and updating time via NTP
 IMAGE_INSTALL:append = " ntp tzdata"
 
 export IMAGE_BASENAME = "core-image-meteo"
@@ -23,5 +24,5 @@ ROOTFS_POSTPROCESS_COMMAND += "set_global_env;"
 # add GUI application
 IMAGE_INSTALL:append = " slint-gui"
 
-# add weather-fetcher daemon
-IMAGE_INSTALL:append = " weather-fetcher"
+# add weather-provider daemon
+IMAGE_INSTALL:append = " weather-provider"
