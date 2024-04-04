@@ -5,8 +5,8 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 inherit cargo_bin
 
 # Backend and renderer features for build
-BACKEND_TYPE = "${@bb.utils.contains_any('DISTRO_FEATURES', 'x11 wayland', '\"backend-winit\"', '\"backend-linuxkms-noseat\"', d)}"
-RENDER_TYPE = '"renderer-femtovg"'
+BACKEND_TYPE ?= "${@bb.utils.contains_any('DISTRO_FEATURES', 'x11 wayland', '\"backend-winit\"', '\"backend-linuxkms-noseat\"', d)}"
+RENDER_TYPE ?= '"renderer-femtovg"'
 DEPENDS += "${@bb.utils.contains_any('DISTRO_FEATURES', 'x11 wayland', '', 'udev libxkbcommon libinput virtual/libgbm', d)}"
 
 SRC_URI:append = " \

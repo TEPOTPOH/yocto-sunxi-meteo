@@ -8,7 +8,7 @@ IMAGE_INSTALL:append = " ntp tzdata"
 export IMAGE_BASENAME = "core-image-meteo"
 
 # add application that handles CO2 sensors
-IMAGE_INSTALL:append = " python3-co2-sensor-daemon"
+IMAGE_INSTALL:append = " co2-sensor-daemon"
 # add MQTT server
 IMAGE_INSTALL:append = " mosquitto"
 # add application that handles HTU21D relative humidity and temperature sensor

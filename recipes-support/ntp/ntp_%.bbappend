@@ -1,4 +1,4 @@
-# Replace config file for Mosquitto
+# Replace config file for NTP
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI += "file://ntp.conf"
 

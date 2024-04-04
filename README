@@ -3,10 +3,10 @@ Base information:
 Application: home meteostation with number of sensors and colour LCD display
 
 Hardware:
- - cubieboard1: Allwinner A10 (sun4i), HDMI, Ethernet LAN
- - CO2 sensor MH-Z19b
- - Temperature and Relative Humidiy sensor HTU21D
- - 7 inch IPS LCD Wisecoco 1024x600, HDMI, USB touch
+ - Main board - Cubieboard1: Allwinner A10 (sun4i), HDMI, Ethernet LAN
+ - CO2 sensor - MH-Z19b
+ - Temperature and Relative Humidiy sensor - HTU21D
+ - Display - 7 inch IPS LCD Wisecoco 1024x600, HDMI, USB touch
  - TODO: WIFI
 
 TODO: Scheme of hardware connections
@@ -16,7 +16,7 @@ Software:
  - mainline kernel
  - mainline U-boot
  - MH-Z19b CO2 sensor daemon (python3)
- - Mosquitoo - MQTT broker
+ - MQTT broker - Mosquitoo
  - HTU21D Temperature and Relative Humidiy sensor daemon (rust)
  - Graphics - Slint GUI (rust)
 
@@ -27,19 +27,19 @@ meta-meteo layer
 Dependencies
 ============
 
-  1. layers
+  Layers
 
-  TODO: add URLs
-
-  Name,                branch/tag
-  meta                 
-  meta-poky            
-  meta-yocto-bsp       "kirkstone"
-  meta-sunxi           "kirkstone"
-  meta-oe              
-  meta-python          
-  meta-networking      "kirkstone"
-  meta-rust-bin        "master" https://github.com/rust-embedded/meta-rust-bin
+  Name,             URL,                                            branch/tag
+  poky              git://git.yoctoproject.org/poky                 "kirkstone"
+  - meta
+  - meta-poky
+  - meta-yocto-bsp
+  meta-openembedded git://git.openembedded.org/meta-openembedded    "kirkstone"
+  - meta-oe
+  - meta-python
+  - meta-networking
+  meta-sunxi        https://github.com/linux-sunxi/meta-sunxi       "kirkstone"
+  meta-rust-bin     https://github.com/rust-embedded/meta-rust-bin  "master"
 
 
 Description of modules
@@ -51,7 +51,7 @@ Description of modules
 - recipes-graphics/xorg-lib - Fix original recipe issue: include libxkbcommon-x11 module when rdepend on libxkbcommon.
                               Slint depends on this module libxkbcommon-11
 - recipes-kernel/linux - patched DTS in mainline linux for activate UART4 for CO2 sensor
-- recipes-python/python3-co2-sensor-daemon - Python application to read sensors data and send it to MQTT broker
+- recipes-python/co2-sensor-daemon - Python application to read sensors data and send it to MQTT broker
 -               /python3-mhz19 - Python module for interact with MH-Z19 CO2 sensor.
                                  Pathed in order to get rid of RPI dependencies.
 - recipes-rust/htu21d-daemon - Rust daemon for TE HTU21D relative humidity and temperature sensor.
@@ -83,6 +83,7 @@ HOW TO USE
   MACHINE ??= "cubieboard"
   MACHINEOVERRIDES .= ":use-mailine-graphics"
   DISTRO = "cubieboard-meteo"
+  LICENSE_FLAGS_ACCEPTED = "commercial license"
 
   # optional and depends on build hardware
   BB_NUMBER_THREADS = "4"
@@ -95,5 +96,5 @@ HOW TO USE
 4. Write image on SD card (/dev/sd<X>):
 sudo dd bs=4M if=<path to image build directory>/tmp/deploy/images/cubieboard/core-image-meteo-cubieboard.sunxi-sdimg of=/dev/sd<X> status=progress && sync /dev/sd<X>
 5. Insert SD card to Cubieboard, connect to LAN, Power ON
-TODO: how to look MQTT data from broker
+
 
