@@ -10,6 +10,9 @@ use std::sync::{Arc, Mutex};
 use envconfig::Envconfig;
 use rumqttc::{MqttOptions, Client, QoS};
 
+pub mod parsers;
+
+use parsers::sw_forecast_parser::*;
 
 #[derive(Envconfig, Debug)]
 struct Config {
@@ -35,8 +38,8 @@ struct Config {
     pub kp_inst_interval_s: u16,
 }
 
-fn convert_datetime(input: &str, format: &str, offset_hours: i64) -> String {
-    let mut datetime = NaiveDateTime::parse_from_str(input, format).expect("Failed to parse datetime");
+fn convert_datetime(input: &str, in_format: &str, offset_hours: i64) -> String {
+    let mut datetime = NaiveDateTime::parse_from_str(input, in_format).expect("Failed to parse datetime");
     datetime += chrono::Duration::hours(offset_hours);
     return datetime.format("%H:%M %d-%m-%Y").to_string();
 }
@@ -53,7 +56,7 @@ async fn fetch_kp_release(num_elements: usize) -> Result<Vec<KpIndex>, String> {
     let fetch_data = async {
         reqwest::get(url).await?    // make GET request
             .error_for_status()?    // handling HTTP status
-            .json::<Vec<Vec<String>>>().await.map(|data| Ok(data))?    // Deserialization JSON and wrap data into Result type
+            .json::<Vec<Vec<String>>>().await.map(|data| Ok(data))?    // Deserialize JSON and wrap data into Result type
     };
     // Block of code "fetch_data" returns type Result<T, Error> and it should be converted to Result<T, String>
     let raw_data = fetch_data.await.map_err(|e: Error| format!("reqwest error: {e}"))?;
@@ -61,7 +64,7 @@ async fn fetch_kp_release(num_elements: usize) -> Result<Vec<KpIndex>, String> {
     // skip header
     let data_without_header = &raw_data[1..];
 
-    // determide initial index for slice
+    // determine initial index for slice
     let start_index = if data_without_header.len() > num_elements {
         data_without_header.len() - num_elements
     } else {
@@ -119,7 +122,7 @@ async fn fetch_kp_instant() -> Result<KpIndex, String> {
     let fetch_data = async {
         reqwest::get(url).await?    // make GET request
             .error_for_status()?    // handling HTTP status
-            .json::<Vec<KpInst>>().await.map(|data| Ok(data))?    // Deserialization JSON and wrap data into Result type
+            .json::<Vec<KpInst>>().await.map(|data| Ok(data))?    // Deserialize JSON and wrap data into Result type
     };
     // Block of code "fetch_data" returns type Result<T, Error> and it should be converted to Result<T, String>
     let raw_data = fetch_data.await.map_err(|e: Error| format!("reqwest error: {e}"))?;
@@ -141,7 +144,6 @@ async fn update_kp_instant(shared_kp_data: Arc<Mutex<KpIndex>>) -> Result<(), St
             return Err(format!("Ошибка при получении данных из fetch_kp_instant: {}", e));
         },
     };
-    println!("2 Fetched new last Kp data");
     let mut data = shared_kp_data.lock().unwrap();
     *data = last_kp_inst;
     return Ok(());
@@ -167,7 +169,6 @@ async fn send_to_broker(client: Arc<Mutex<Client>>, topic: String, payload: Stri
 
 async fn send_kp(mut kp_release: Vec<KpIndex>, last_kp_inst: KpIndex, config: &Config, client: Arc<Mutex<Client>>) -> Result<(), String> {
     kp_release.push(last_kp_inst);
-    println!("3 Result data:");
     for entry in &kp_release {
         println!("Time: {}, Kp: {}", entry.time_tag, entry.kp);
     }
@@ -218,8 +219,8 @@ async fn main() {
         num_elements
         ])));
     let kp_inst = Arc::new(Mutex::new(kp_data_init));
-    let mut interval_fetch_kp_release = tokio::time::interval(Duration::from_secs(config.kp_release_interval_s.into()));
-    let mut interval_fetch_kp_instant = tokio::time::interval(Duration::from_secs(config.kp_inst_interval_s.into()));
+    let mut kp_release_data_interval = tokio::time::interval(Duration::from_secs(config.kp_release_interval_s.into()));
+    let mut instant_data_interval = tokio::time::interval(Duration::from_secs(config.kp_inst_interval_s.into()));
     
     let mut client_ref = init_mqtt(&config).await.unwrap();
 
@@ -235,12 +236,18 @@ async fn main() {
                 kp_inst.lock().unwrap().clone(),
                 &config,
                 client_ref.clone()).await.ok();
+        let flux_data = fetch_flux(2).await.unwrap_or_default();
+        send_flux(flux_data,
+                  &config,
+                  client_ref.clone()).await.ok();
+        let swf = fetch_space_forecast().await.unwrap_or_default();
+        send_sw_forecast(swf, &config, client_ref.clone()).await.ok();
     };
     initial_tasks.await;
 
     loop {
         tokio::select! {
-            _ = interval_fetch_kp_release.tick() => {
+            _ = kp_release_data_interval.tick() => {
                 match update_kp_release(num_elements, kp_release.clone()).await {
                     Ok(_) => {},
                     Err(e) => {
@@ -249,8 +256,27 @@ async fn main() {
                         sleep(http_error_timeout).await;
                     }
                 };
+                // sw forecast
+                let swf = match fetch_space_forecast().await {
+                    Ok(data) => data,
+                    Err(e) => {
+                        println!("Ошибка при получении данных из fetch_space_forecast: {}", e);
+                        println!("Tring extra timeout {:?} after connection error", http_error_timeout);
+                        sleep(http_error_timeout).await;
+                        break;
+                    },
+                };
+                match send_sw_forecast(swf, &config, client_ref.clone()).await {
+                    Ok(_) => {},
+                    Err(e) => {
+                        println!("Send SW forecast data error: {}", e);
+                        println!("Tring extra timeout {:?} after connection error", mqtt_error_timeout);
+                        sleep(mqtt_error_timeout).await;
+                    },
+                };
             },
-            _ = interval_fetch_kp_instant.tick() => {
+            _ = instant_data_interval.tick() => {
+                // Kp
                 match update_kp_instant(kp_inst.clone()).await {
                     Ok(_) => {},
                     Err(e) => {
@@ -270,7 +296,132 @@ async fn main() {
                         sleep(mqtt_error_timeout).await;
                     },
                 };
+                // Fluxs
+                let flux_data = match fetch_flux(2).await {
+                    Ok(flux_data) => flux_data,
+                    Err(e) => {
+                        println!("Ошибка при получении данных из fetch_flux: {}", e);
+                        println!("Tring extra timeout {:?} after connection error", http_error_timeout);
+                        sleep(http_error_timeout).await;
+                        break;
+                    },
+                };
+                match send_flux(flux_data,
+                               &config,
+                               client_ref.clone()).await {
+                    Ok(_) => {},
+                    Err(e) => {
+                        println!("Send Flux data error: {}", e);
+                        println!("Tring extra timeout {:?} after connection error", mqtt_error_timeout);
+                        sleep(mqtt_error_timeout).await;
+                    },
+                };
             },
         }
     }
+}
+
+#[derive(Deserialize, Debug, Clone)]
+struct ProtonFlux {
+    time_tag: String,
+    #[serde(skip_deserializing)]
+    satellite: u8,
+    flux: f32,
+    energy: String,
+}
+
+#[derive(Serialize, Debug, Clone)]
+struct ProtonFluxMQTT {
+    time_tag: String,
+    flux_gt10mev: f32,
+    flux_gt50mev: f32,
+    flux_gt100mev: f32,
+    flux_gt500mev: f32,
+}
+
+async fn fetch_flux(num_records: usize) -> Result<Vec<ProtonFluxMQTT>, String> {
+    let url = "https://services.swpc.noaa.gov/json/goes/primary/integral-protons-plot-6-hour.json";
+    // TODO: move this fetcher to another function
+    let fetch_data = async {
+        reqwest::get(url).await?    // make GET request
+            .error_for_status()?    // handling HTTP status
+            .json::<Vec<ProtonFlux>>().await.map(|data| Ok(data))?    // Deserialize JSON and wrap data into Result type
+    };
+    // Block of code "fetch_data" returns type Result<T, Error> and it should be converted to Result<T, String>
+    let raw_data = fetch_data.await.map_err(|e: Error| format!("reqwest error: {e}"))?;
+
+    // determine initial index for slice
+    let num_elements = num_records * 4;
+    let start_index = if raw_data.len() > num_elements {
+        raw_data.len() - num_elements
+    } else {
+        0
+    };
+
+    // make slice with needed number of last elements
+    let required_data = &raw_data[start_index..];
+
+    // move data to structs
+    let mut flux_records: Vec<ProtonFluxMQTT> = Vec::with_capacity(num_records);
+    let mut mqtt_record = ProtonFluxMQTT {
+        time_tag: "".to_string(),
+        flux_gt10mev: 0.0,
+        flux_gt100mev: 0.0,
+        flux_gt50mev: 0.0,
+        flux_gt500mev:0.0
+    };
+    for item in required_data.iter() {
+        let flux_f32 = item.flux;
+        if item.energy == ">=10 MeV" {
+            mqtt_record.flux_gt10mev = flux_f32;
+        } else if item.energy == ">=100 MeV" {
+            mqtt_record.flux_gt100mev = flux_f32;
+        } else if item.energy == ">=50 MeV" {
+            mqtt_record.flux_gt50mev = flux_f32;
+        } else if item.energy == ">=500 MeV" {
+            mqtt_record.flux_gt500mev = flux_f32;
+            mqtt_record.time_tag = convert_datetime(item.time_tag.as_str(), "%Y-%m-%dT%H:%M:%S%Z", 0);
+            flux_records.push(mqtt_record.clone());
+        }
+    }
+    return Ok(flux_records);
+}
+
+async fn send_flux(flux_data: Vec<ProtonFluxMQTT>, config: &Config, client: Arc<Mutex<Client>>) -> Result<(), String> {
+    for entry in &flux_data {
+        println!("Time: {}, flux >=10Mev: {}", entry.time_tag, entry.flux_gt10mev);
+    }
+    let topic = make_full_topic("nasa_flux", &config);
+    send_to_broker(client, topic, serde_json::to_string(&flux_data).unwrap()).await?;
+    return Ok(());
+}
+
+async fn fetch_space_forecast() -> Result<SWForecast, String> {
+    let url = "https://services.swpc.noaa.gov/text/3-day-forecast.txt";
+    let fetch_data = async {
+        reqwest::get(url).await?    // make GET request
+            .error_for_status()?    // handling HTTP status
+            .text().await.map(|data| Ok(data))?    // Get text and wrap it into Result type
+    };
+    // Block of code "fetch_data" returns type Result<T, Error> and it should be converted to Result<T, String>
+    let raw_data = fetch_data.await.map_err(|e: Error| format!("reqwest error: {e}"))?;
+
+    let sw_data = parse_sw_forecast(raw_data.as_str())?;
+    for kp_data in &sw_data.kp {
+        println!("Date: {}, Time end: {}, Kp: {}", kp_data.date, kp_data.hour, kp_data.value);
+    }
+    for srs_data in &sw_data.srs {
+        println!("Date: {}, S1: {}, S2: {}, S3: {}, S4: {}, S5: {}", srs_data.date, srs_data.s1, srs_data.s2, srs_data.s3, srs_data.s4, srs_data.s5);
+    }
+    for rb_data in &sw_data.rb {
+        println!("Date: {}, R1: {}, R2: {}, R3: {}, R4: {}, R5: {}", rb_data.date, rb_data.s1, rb_data.s2, rb_data.s3, rb_data.s4, rb_data.s5);
+    }
+
+    return Ok(sw_data);
+}
+
+async fn send_sw_forecast(data: SWForecast, config: &Config, client: Arc<Mutex<Client>>) -> Result<(), String> {
+    let topic = make_full_topic("nasa_sw_forecast", &config);
+    send_to_broker(client, topic, serde_json::to_string(&data).unwrap()).await?;
+    return Ok(());
 }
