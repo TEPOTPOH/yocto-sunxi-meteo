@@ -52,14 +52,16 @@ export component IndoorDataWidget inherits HorizontalLayout {
         },
     ] : Rectangle {
         horizontal-stretch: 1;
-        min-width: 150px;
+        // min-width: 150px;
+        // max-width: 600px/3;
+        preferred-width: 600px/3;
         border-radius: 12px;
         background: Skin.palette.widgetBgnd;
 
         VerticalLayout {
-            padding-top: 5px;
+            padding-top: 10px;
             horizontal-stretch: 1;
-            min-width: 150px;
+            // min-width: 150px;
 
             Text {
                 font-size: Skin.LargeFont;
@@ -105,8 +107,8 @@ export component IndoorDataWidget inherits HorizontalLayout {
                 }
 
                 HorizontalLayout {
-                    y: root.y + 13px;
-                    max-height: 30px;
+                    y: root.y + 18px;
+                    max-height: 35px;
                     Text {
                         text: 0;
                         font-size: Skin.MediumFont;

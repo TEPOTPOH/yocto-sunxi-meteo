@@ -52,7 +52,6 @@ export global SpaceWeatherAdapter {
     in property <float> solar_radiation_now : 1535;
     in property <float> solar_radiation_forecast_3h : 25000;
     in property <float> solar_radiation_forecast_24h : 155;
-
 }
 
 export component SpaceWeatherDataWidget inherits HorizontalLayout {
@@ -66,6 +65,7 @@ export component SpaceWeatherDataWidget inherits HorizontalLayout {
     in property solar_radiation_forecast_24h <=> SpaceWeatherAdapter.solar_radiation_forecast_24h;
 
     private property <float> current_kp: kp_index_data[kp_index_data.length - 1].kp;
+    private property <length> storm_font: Skin.MediumFont;
 
     spacing: 10px;
     Rectangle {
@@ -83,18 +83,18 @@ export component SpaceWeatherDataWidget inherits HorizontalLayout {
         background: Skin.palette.widgetBgnd;
 
         GridLayout {
-            spacing: 4px;
+            spacing: 5px;
             padding-top: 6px;
             padding-bottom: 10px;
-            padding-left: 6px;
-            padding-right: 6px;
+            padding-left: 9px;
+            padding-right: 9px;
 
             Text {
                 row: 0; colspan: 2;
                 text: "  Storms\nNow";
                 horizontal-alignment: center;
                 font-weight: 500;
-                font-size: Skin.MediumFont;
+                font-size: storm_font;
             }
             StormIcon {
                 row: 1; col: 0;
@@ -112,7 +112,7 @@ export component SpaceWeatherDataWidget inherits HorizontalLayout {
                 text: "3H forecast";
                 horizontal-alignment: center;
                 font-weight: 500;
-                font-size: Skin.MediumFont;
+                font-size: storm_font;
             }
             StormIcon {
                 row: 3; col: 0;
@@ -130,7 +130,7 @@ export component SpaceWeatherDataWidget inherits HorizontalLayout {
                 text: "24H forecast";
                 horizontal-alignment: center;
                 font-weight: 500;
-                font-size: Skin.MediumFont;
+                font-size: storm_font;
             }
             StormIcon {
                 row: 5; col: 0;

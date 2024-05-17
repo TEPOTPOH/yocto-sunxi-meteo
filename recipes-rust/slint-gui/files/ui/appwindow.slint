@@ -49,22 +49,14 @@ component Clouds inherits TitledBox {
     AnimationTestBox {}
 }
 
-component Outdoor inherits TitledBox {
-    title: "Outdoor";
-    Text {
-        text: "To be done ... work in process";
-        horizontal-alignment: center;
-        font-size: Skin.LargeFont;
-    }
-}
 
 component MainContent {
-    min-width: 800px;
-    min-height: 500px;
-    max-width: 1024px;
-    max-height: 600px;
-    preferred-width: 1024px;
-    preferred-height: 600px;
+    min-width: 600px;
+    min-height: 1024px;
+    max-width: 600px;
+    max-height: 1024px;
+    preferred-width: 600px;
+    preferred-height: 1024px;
 
     Rectangle {
         background: Skin.palette.mainContent;
@@ -75,25 +67,13 @@ component MainContent {
 
         SpaceWeatherWidget {
             row: 0; col: 0;
-            max-width: root.max-width/2;
-            max-height: root.max-height/2;
         }
+
         Clouds {
-            row: 0; col: 1;
-            max-width: root.max-width/2;
-            max-height: root.max-height/2;
+            row: 1;
         }
-
-        Outdoor {
-            row: 1; col: 0;
-            max-width: root.max-width/2;
-            max-height: root.max-height/2;
-        }
-
         IndoorWidget {
-            row: 1; col: 1;
-            max-width: root.max-width/2;
-            max-height: root.max-height/2;
+            row: 2;
         }
     }
 }
@@ -101,12 +81,12 @@ component MainContent {
 export component AppWindow inherits Window {
     always-on-top: true;
     background: #7c7c7c;
-    min-width: 800px;
-    min-height: 500px;
-    max-width: 1024px;
-    max-height: 600px;
-    preferred-width: 1024px;
-    preferred-height: 600px;
+    min-width: 600px;
+    min-height: 1024px;
+    max-width: 600px;
+    max-height: 1024px;
+    preferred-width: 600px;
+    preferred-height: 1024px;
 
     no-frame: true;
 

@@ -34,8 +34,10 @@ component Bar {
         return (floor(val) + 1) + "-";
     }
     if bar-value >= 4.67: Text {
+        private property <length> fontsize: Skin.SmallFont;
         text: convert_kp_val(bar-value, fract_val);
-        y: parent.height - bar-height - 15px;
+        y: parent.height - bar-height - fontsize * 125%;
+        font-size: fontsize;
     }
 }
 

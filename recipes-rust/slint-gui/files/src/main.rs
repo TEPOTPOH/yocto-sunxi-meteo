@@ -205,7 +205,7 @@ fn update_sw_forecast(window_weak: Weak<AppWindow>, json_data: JsonValue, config
             Some((srs_1d, srs_3d)) => {
                 println!("srs_1d: {:#?}, srs_3d: {:#?}", srs_1d, srs_3d);
                 // FIXME: temporary using 1d forecast data as 3h forecast
-                window.global::<SpaceWeatherAdapter>().set_solar_radiation_forecast_3h(srs_3h.into());
+                window.global::<SpaceWeatherAdapter>().set_solar_radiation_forecast_3h(srs_1d.into());
                 window.global::<SpaceWeatherAdapter>().set_solar_radiation_forecast_24h(srs_1d.into());
             },
             None => {
@@ -295,7 +295,7 @@ fn extract_srs_rb_forecast(srs_vec_json: &JsonValue, current_datetime: DateTime<
     let mut interval_3d_started: bool = false;
     for srs in srs_vec_json.members() {
         let date = srs["date"].as_str().unwrap_or_default();
-        let (max_storm_level, probability) = get_max_storm(srs, min_prob_thrh).unwrap_or((0, 0));
+        let (max_storm_level, _) = get_max_storm(srs, min_prob_thrh).unwrap_or((0, 0));
         if date == current_date {
             srs_1d_max_storm_level = max_storm_level;
             interval_3d_started = true;
