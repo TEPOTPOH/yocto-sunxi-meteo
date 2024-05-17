@@ -36,4 +36,6 @@ export SLINT_DEBUG_PERFORMANCE=refresh_lazy,overlay
 
 @APPNAME@ > /var/log/@APPNAME@.log 2>&1 &
 
+xrandr -o left     # rotate srcreen
+
 exec matchbox-window-manager -theme Sato -use_cursor $SHOWCURSOR $@
