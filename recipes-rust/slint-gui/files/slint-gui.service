@@ -1,0 +1,15 @@
+[Unit]
+Description=Slint GUI
+After=rc-local.service
+
+[Service]
+WorkingDirectory=@DMNWORKDIR@/
+User=pi
+ExecStart=@DMNWORKDIR@/slint-gui
+Restart=always
+RestartSec=30
+Type=simple
+PIDFile=@LOCALSTATEDIR@/run/slint-gui.pid
+
+[Install]
+WantedBy=multi-user.target

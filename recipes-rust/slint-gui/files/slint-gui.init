@@ -1,0 +1,61 @@
+#! /bin/sh
+
+# Based on the Debian initscript for mosquitto
+
+set -e
+
+PIDFILE=@LOCALSTATEDIR@/run/slint-gui.pid
+DAEMON=@DMNWORKDIR@/slint-gui
+
+test -x ${DAEMON} || exit 0
+
+umask 022
+
+. @SYSCONFDIR@/init.d/functions
+
+@SETUPENV@
+
+export PATH="${PATH:+$PATH:}@BINDIR@"
+
+case "$1" in
+    start)
+        echo "Starting slint-gui daemon" "slint-gui"
+        if start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --exec ${DAEMON} ; then
+            echo "slint-gui daemon emergency has stop"
+            exit 0
+        else
+            echo "slint-gui daemon emergency has stop with error status"
+            exit 1
+        fi
+        ;;
+    stop)
+        echo "Stopping slint-gui daemon" "slint-gui"
+        if start-stop-daemon --stop --oknodo --pidfile ${PIDFILE}; then
+            rm -f ${PIDFILE}
+            exit 0
+        else
+            exit 1
+        fi
+        ;;
+    restart)
+        echo "Restarting slint-gui daemon" "slint-gui"
+        if start-stop-daemon --stop  --oknodo --retry 30 --pidfile ${PIDFILE}; then
+            rm -f ${PIDFILE}
+        fi
+        if start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --exec ${DAEMON} ; then
+            exit 0
+        else
+            exit 1
+        fi
+        ;;
+
+    status)
+        status ${DAEMON} && exit 0 || exit $?
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+esac
+
+exit 0

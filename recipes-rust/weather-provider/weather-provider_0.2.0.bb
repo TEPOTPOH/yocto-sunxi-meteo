@@ -6,16 +6,16 @@ inherit cargo_bin
 
 DEPENDS += "openssl"
 
+SRCREV = "54be86f5fa89bac7650c656a67e475e688239067"
 SRC_URI:append = " \
-    file://src \
-    file://Cargo.toml \
+    git://github.com/TEPOTPOH/mqtt-weather-provider.git;branch=main;protocol=https \
 "
 # Configure startup
 # daemon startup configs for systemd and sysvinit. Tested only config for sysvinit.
 SRC_URI:append = " file://${BPN}.service"
 SRC_URI:append = " file://${BPN}.init"
 
-S = "${WORKDIR}"
+S = "${WORKDIR}/git"
 
 do_compile[network] = "1"
 
@@ -25,14 +25,14 @@ setup_env_cmd = ". ${sysconfdir}/profile.d/set_global_env.sh"
 
 do_install:append () {
     install -d ${D}${systemd_unitdir}/system/
-    install -m 0644 ${S}/${BPN}.service ${D}${systemd_unitdir}/system/${BPN}.service
+    install -m 0644 ${WORKDIR}/${BPN}.service ${D}${systemd_unitdir}/system/${BPN}.service
     sed -i -e 's,@DMNWORKDIR@,${USRBINPATH},g' \
         -e 's,@BINDIR@,${USRBINPATH},g' \
         -e 's,@LOCALSTATEDIR@,${localstatedir},g' \
         ${D}${systemd_unitdir}/system/${BPN}.service
 
     install -d ${D}${sysconfdir}/init.d/
-    install -m 0755 ${S}/${BPN}.init ${D}${sysconfdir}/init.d/${BPN}
+    install -m 0755 ${WORKDIR}/${BPN}.init ${D}${sysconfdir}/init.d/${BPN}
     sed -i -e 's,@BINDIR@,${USRBINPATH},g' \
         -e 's,@LOCALSTATEDIR@,${localstatedir},g' \
         -e 's,@SYSCONFDIR@,${sysconfdir},g' \
