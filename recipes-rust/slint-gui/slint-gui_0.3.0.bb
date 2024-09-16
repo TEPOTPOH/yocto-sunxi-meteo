@@ -8,9 +8,9 @@ inherit cargo_bin
 BACKEND_TYPE ?= '"backend-linuxkms-noseat"'
 RENDER_TYPE ?= '"renderer-femtovg"'
 
-DEPENDS += "udev libxkbcommon libinput virtual/libgbm"
+DEPENDS += "udev libxkbcommon libinput virtual/libgbm gstreamer1.0 gstreamer1.0-plugins-base"
 
-SRCREV = "71675232a57cf61224d68fb6c6877e76537da953"
+SRCREV = "282dbeb114305a9eebcb98e34681fc27d13ef32e"
 SRC_URI:append = " \
     git://github.com/TEPOTPOH/slint-meteo-gui.git;branch=main;protocol=https \
 "
@@ -29,7 +29,7 @@ do_compile[network] = "1"
 # xcb and xcbcommon aren't needed if you are only using backend-winit-wayland without backend-winit-x11.
 # RDEPENDS:${PN} += "libudev libxcb libxkbcommon fontconfig ffmpeg"
 # (optional) libseat for GPU and input device access without requiring root access.  libseat-dev
-RDEPENDS:${PN} += "libudev libxkbcommon fontconfig ffmpeg"
+RDEPENDS:${PN} += "libudev libxkbcommon fontconfig gstreamer1.0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad"
 
 do_configure:append() {
     sed -i -e 's,@BACKEND_TYPE@,${BACKEND_TYPE},g' \
