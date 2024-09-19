@@ -10,7 +10,7 @@ RENDER_TYPE ?= '"renderer-femtovg"'
 
 DEPENDS += "udev libxkbcommon libinput virtual/libgbm gstreamer1.0 gstreamer1.0-plugins-base"
 
-SRCREV = "282dbeb114305a9eebcb98e34681fc27d13ef32e"
+SRCREV = "ee591a3812cd6ef55a8f680971dde8c7afa1156b"
 SRC_URI:append = " \
     git://github.com/TEPOTPOH/slint-meteo-gui.git;branch=main;protocol=https \
 "

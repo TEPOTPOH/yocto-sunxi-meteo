@@ -6,7 +6,7 @@ inherit cargo_bin
 
 DEPENDS += "openssl"
 
-SRCREV = "54be86f5fa89bac7650c656a67e475e688239067"
+SRCREV = "c9ad353b0ac35203bf38dfa18486fb927da218d0"
 SRC_URI:append = " \
     git://github.com/TEPOTPOH/mqtt-weather-provider.git;branch=main;protocol=https \
 "
