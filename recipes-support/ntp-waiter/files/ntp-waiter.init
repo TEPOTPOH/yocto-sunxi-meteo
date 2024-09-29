@@ -1,0 +1,43 @@
+#! /bin/sh
+
+THRESHOLD_DATE="@BUILDDATE@"
+
+check_date() {
+  # convert to UNIX-timestamp
+  CURRENT_DATE_EPOCH=$(date +%s)
+  THRESHOLD_DATE_EPOCH=$(date -d "$THRESHOLD_DATE" +%s)
+  # convert from YYYYMMDD to YYYY-MM-DD
+  THRESHOLD_DATE2="${THRESHOLD_DATE:0:4}-${THRESHOLD_DATE:4:2}-${THRESHOLD_DATE:6:2}"
+  # convert from YYYY-MM-DD to UNIX-timestamp
+  THRESHOLD_DATE_EPOCH=$(date -d ${THRESHOLD_DATE2} +%s)
+
+  if [[ "$CURRENT_DATE_EPOCH" -lt "$THRESHOLD_DATE_EPOCH" ]]; then
+    return 1  # date is less then threshold
+  else
+    return 0  # date is correct
+  fi
+}
+
+set -e
+umask 022
+
+. @SYSCONFDIR@/init.d/functions
+
+@SETUPENV@
+
+export PATH="${PATH:+$PATH:}@BINDIR@"
+
+case "$1" in
+    start)
+        while ! check_date; do
+            echo "System time is earlier than $THRESHOLD_DATE. Waiting for NTP synchronization..."
+            sleep 5
+        done
+        echo "System time is correct. Proceeding..."
+        ;;
+    *)
+        echo "Usage: $0 {start}"
+        exit 1
+esac
+
+exit 0
