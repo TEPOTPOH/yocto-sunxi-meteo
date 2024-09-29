@@ -48,7 +48,7 @@ wifi_config () {
     if ! grep -q "^auto wlan0" "$INTERFACES_FILE"; then
         sed -i "/^iface wlan0/i auto wlan0" $INTERFACES_FILE
     fi
-    # Add waiting for driver finished initialization
+    # Add waiting for driver initialization finished
     if ! grep -q "^pre-up sleep 5" "$INTERFACES_FILE"; then
         sed -i "/^iface wlan0/a pre-up sleep 5" $INTERFACES_FILE
     fi

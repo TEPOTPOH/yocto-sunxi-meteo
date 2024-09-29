@@ -19,13 +19,8 @@ export PATH="${PATH:+$PATH:}@BINDIR@"
 case "$1" in
     start)
         echo "Starting MH-Z19B CO2 sensor daemon" "co2-sensor-daemon"
-        if start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --exec ${PYTHON} -- "${DAEMON}" ; then
-            echo "MH-Z19B CO2 sensor daemon emergency has stop"
-            exit 0
-        else
-            echo "MH-Z19B CO2 sensor daemon emergency has stop with error status"
-            exit 1
-        fi
+        start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --exec ${PYTHON} -- "${DAEMON}"
+        echo "done"
         ;;
     stop)
         echo "Stopping MH-Z19B CO2 sensor daemon" "co2-sensor-daemon"
@@ -41,17 +36,11 @@ case "$1" in
         if start-stop-daemon --stop  --oknodo --retry 30 --pidfile ${PIDFILE}; then
             rm -f ${PIDFILE}
         fi
-        if start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --exec ${PYTHON} -- "${DAEMON}" ; then
-            exit 0
-        else
-            exit 1
-        fi
+        start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --exec ${PYTHON} -- "${DAEMON}"
         ;;
-
     status)
         status ${DAEMON} && exit 0 || exit $?
         ;;
-
     *)
         echo "Usage: $0 {start|stop|restart|status}"
         exit 1

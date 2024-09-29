@@ -20,13 +20,8 @@ export PATH="${PATH:+$PATH:}@BINDIR@"
 case "$1" in
     start)
         echo "Starting weather-provider daemon" "weather-provider"
-        if start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --exec ${DAEMON} ; then
-            echo "weather-provider daemon emergency has stop"
-            exit 0
-        else
-            echo "weather-provider daemon emergency has stop with error status"
-            exit 1
-        fi
+        start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --startas /bin/sh -- -c "exec $DAEMON > /var/log/weather-provider.log 2>&1"
+        echo "done"
         ;;
     stop)
         echo "Stopping weather-provider daemon" "weather-provider"
@@ -42,11 +37,8 @@ case "$1" in
         if start-stop-daemon --stop  --oknodo --retry 30 --pidfile ${PIDFILE}; then
             rm -f ${PIDFILE}
         fi
-        if start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --exec ${DAEMON} ; then
-            exit 0
-        else
-            exit 1
-        fi
+        sleep 5
+        start-stop-daemon --start --oknodo --background --make-pidfile --pidfile ${PIDFILE} --startas /bin/sh -- -c "exec $DAEMON > /var/log/weather-provider.log 2>&1"
         ;;
 
     status)
