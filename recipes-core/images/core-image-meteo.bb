@@ -14,11 +14,20 @@ IMAGE_INSTALL:append = " mosquitto"
 # add application that handles HTU21D relative humidity and temperature sensor
 IMAGE_INSTALL:append = " htu21d-daemon"
 
-# configuration for rust applications
+# configuration for applications
+OUTDOOR_VIDEO_URI ?= "using-default-app-video-url"
 set_global_env() {
     mkdir -p ${IMAGE_ROOTFS}${sysconfdir}/profile.d
-    echo "export MQTT_DEVICE_NAME=${MACHINE}" > ${IMAGE_ROOTFS}${sysconfdir}/profile.d/set_global_env.sh
-    echo "export SLINT_KMS_ROTATION=270" >> ${IMAGE_ROOTFS}${sysconfdir}/profile.d/set_global_env.sh
+    GLOBAL_ENV_FILE=${IMAGE_ROOTFS}${sysconfdir}/profile.d/set_global_env.sh
+
+    echo "export MQTT_DEVICE_NAME=${MACHINE}" > $GLOBAL_ENV_FILE
+
+    # https://releases.slint.dev/1.8.0/docs/slint/src/advanced/backend_linuxkms#display-rotation
+    echo "export SLINT_KMS_ROTATION=270" >> $GLOBAL_ENV_FILE
+
+    if [ "${@bb.utils.contains('OUTDOOR_VIDEO_URI', 'using-default-app-video-url', '0', '1', d)}" = "1" ] ; then
+		echo "export VIDEO_URL=${OUTDOOR_VIDEO_URI}" >> $GLOBAL_ENV_FILE
+	fi
 }
 ROOTFS_POSTPROCESS_COMMAND += "set_global_env;"
 
@@ -54,3 +63,9 @@ wifi_config () {
     fi
 }
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'rtl8821cu', 'wifi_config;', '', d)}"
+
+# https://releases.slint.dev/1.8.0/docs/slint/src/advanced/backend_linuxkms#display-rotation
+touch_rotate () {
+    echo 'ENV{LIBINPUT_CALIBRATION_MATRIX}="0 -1 1 1 0 0" # 90 degree clockwise' > ${IMAGE_ROOTFS}${sysconfdir}/udev/rules.d/libinput.rules
+}
+ROOTFS_POSTPROCESS_COMMAND += "touch_rotate;"
