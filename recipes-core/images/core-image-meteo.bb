@@ -1,4 +1,4 @@
-DESCRIPTION = "Image based on Sato for meteo station with LCD display"
+DESCRIPTION = "Image based on core-image-base for meteo station with LCD display"
 
 require recipes-core/images/core-image-base.bb
 
@@ -49,7 +49,7 @@ WIFI_PASS ?= ""
 wifi_config () {
     echo "network={" >> ${IMAGE_ROOTFS}${sysconfdir}/wpa_supplicant.conf
     echo ' ssid="${WIFI_SSID}"' >> ${IMAGE_ROOTFS}${sysconfdir}/wpa_supplicant.conf
-    echo ' psk="${WIFI_PASS}"' >> ${IMAGE_ROOTFS}${sysconfdir}/wpa_supplicant.conf
+    echo ' psk=${WIFI_PASS}' >> ${IMAGE_ROOTFS}${sysconfdir}/wpa_supplicant.conf
     echo "} " >> ${IMAGE_ROOTFS}${sysconfdir}/wpa_supplicant.conf
 
     INTERFACES_FILE=${IMAGE_ROOTFS}${sysconfdir}/network/interfaces

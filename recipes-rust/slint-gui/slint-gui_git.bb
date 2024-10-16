@@ -10,7 +10,7 @@ RENDER_TYPE ?= '"renderer-femtovg"'
 
 DEPENDS += "udev libxkbcommon libinput virtual/libgbm gstreamer1.0 gstreamer1.0-plugins-base"
 
-SRCREV = "810fced21274f2c61cbea2fc4d6fb65d8556af5c"
+SRCREV = "0c9506bb22ab50cedf83fa10552f9518f75d27f2"
 SRC_URI:append = " \
     git://github.com/TEPOTPOH/slint-meteo-gui.git;branch=main;protocol=https \
 "
@@ -32,8 +32,10 @@ do_compile[network] = "1"
 RDEPENDS:${PN} += "libudev libxkbcommon fontconfig gstreamer1.0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad"
 
 do_configure:append() {
-    sed -i -e 's,@BACKEND_TYPE@,${BACKEND_TYPE},g' \
-        -e 's,@RENDER_TYPE@,${RENDER_TYPE},g' ${S}/Cargo.toml
+    # replace default backend and renerer
+    # NOTE: Make recipe cleaning if yocto returns error on Cargo.toml with doubling " symbols
+    sed -i -e 's,\"backend-winit\",${BACKEND_TYPE},g' \
+        -e 's,\"renderer-femtovg\",${RENDER_TYPE},g' ${S}/Cargo.toml
 }
 
 # Configure startup
