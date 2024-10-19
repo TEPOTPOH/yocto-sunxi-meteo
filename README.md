@@ -9,7 +9,8 @@ Hardware:
  - Display - 7 inch IPS LCD Wisecoco 1024x600, HDMI, USB touch
  - Support USB WIFI RTL8821CU
 
-TODO: Scheme of hardware connections
+Scheme of hardware connections
+![hardware connections](connection_scheme.png)
 
 Software:
  - Yocto linux, based on core image
