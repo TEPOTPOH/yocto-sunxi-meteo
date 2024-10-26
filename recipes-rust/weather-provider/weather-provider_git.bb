@@ -1,4 +1,4 @@
-SUMMARY = "Featch current weather and forecast and send data to MQTT broker"
+SUMMARY = "Fetch current weather and forecast and send it to MQTT broker"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 

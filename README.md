@@ -89,8 +89,6 @@ HOW TO USE
   MACHINEOVERRIDES .= ":use-mailine-graphics"
   DISTRO = "cubieboard-meteo"
   LICENSE_FLAGS_ACCEPTED = "commercial license"
-  WIFI_SSID ?= "your wifi SSID"
-  WIFI_PASS ?= "your wifi password key" # use wpa_passphrase to generate key
   ```
   ```
   # optional and depends on build hardware
@@ -102,10 +100,12 @@ HOW TO USE
   ```
   ```
   # optional for support USB WIFI RTL8821CU:
+  WIFI_SSID ?= "your wifi SSID"
+  WIFI_PASS ?= "your wifi password key" # use wpa_passphrase to generate key
   DISTRO = "cubieboard-meteo-rtl8821cu"
   ```
   ```
-  # optional for set your video streem, should be encoded with h264
+  # optional for set your video stream, should be encoded with h264
   OUTDOOR_VIDEO_URI = "video streem URL"
   ```
 

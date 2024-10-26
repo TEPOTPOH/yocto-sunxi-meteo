@@ -10,7 +10,7 @@ RENDER_TYPE ?= '"renderer-femtovg"'
 
 DEPENDS += "udev libxkbcommon libinput virtual/libgbm gstreamer1.0 gstreamer1.0-plugins-base"
 
-SRCREV = "a3fd922d0bb3c8312fa0a7103d04e7cab8832881"
+SRCREV = "0c9506bb22ab50cedf83fa10552f9518f75d27f2"
 SRC_URI:append = " \
     git://github.com/TEPOTPOH/slint-meteo-gui.git;branch=main;protocol=https \
 "
@@ -24,12 +24,7 @@ do_compile[network] = "1"
 # - xcb (libxcb-shape0-dev libxcb-xfixes0-dev on debian based distributions)
 # - xkbcommon (libxkbcommon-dev on debian based distributions)
 # - fontconfig library (libfontconfig-dev on debian based distributions)
-# - (optional) Qt will be used when qmake is found in PATH
-# - FFMPEG library clang libavcodec-dev libavformat-dev libavutil-dev libavfilter-dev libavdevice-dev libasound2-dev pkg-config
-# xcb and xcbcommon aren't needed if you are only using backend-winit-wayland without backend-winit-x11.
-# RDEPENDS:${PN} += "libudev libxcb libxkbcommon fontconfig ffmpeg"
-# (optional) libseat for GPU and input device access without requiring root access.  libseat-dev
-RDEPENDS:${PN} += "libudev libxkbcommon fontconfig gstreamer1.0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad"
+RDEPENDS:${PN} += "libudev libxkbcommon fontconfig gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad"
 
 do_configure:append() {
     # replace default backend and renerer
