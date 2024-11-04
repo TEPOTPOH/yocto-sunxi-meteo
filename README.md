@@ -47,19 +47,19 @@ Dependencies
 Description of modules
 =======
 
-- recipes-connecivity/mosquitto - MQTT broker
-- recipes-core/psplash - Startup logo
-- recipes-core/base-files - For rotating startup logo verticaly
-- recipes-extended/timezone - Setup timezone in system
-- recipes-kernel/linux - Patched DTS in mainline linux for activate UART4 for CO2 sensor. Enabled Cedar video driver for hardware video decoding.
-- recipes-multimedia/gstreamer - Required gstreamer plugins for video converting and decoding
-- recipes-python/co2-sensor-daemon - Python application to read sensors data and send it to MQTT broker
+- recipes-connecivity/mosquitto - MQTT broker.
+- recipes-core/psplash - Startup logo.
+- recipes-core/base-files - For rotating startup logo verticaly.
+- recipes-extended/timezone - Setup timezone in system.
+- recipes-kernel/linux - Patched DTS in mainline linux for activate UART4 for CO2 sensor. Enabled Cedrus video driver for hardware video decoding.
+- recipes-multimedia/gstreamer - Required gstreamer plugins for video converting and decoding.
+- recipes-python/co2-sensor-daemon - Python application to read sensors data and send it to MQTT broker.
 - recipes-python/python3-mhz19 - Python module for interact with MH-Z19 CO2 sensor. Pathed in order to get rid of RPI dependencies.
-- recipes-rust/htu21d-daemon - Rust daemon for TE HTU21D relative humidity and temperature sensor. Get data from sensor and send it to MQTT broker
-- recipes-rust/slint-gui - GUI for meteostation based on Slint - Rust GUI framework, fetch data from MQTT broker
-- recipes-rust/weather-provider - Weather data provider, send data to MQTT broker
-- recipes-support/ntp - Configure NTP service in order to have real time in system. Need for HTTPS requests
-- recipes-support/ntp-waiter - Service for waiting for NTP service synchronization.
+- recipes-rust/htu21d-daemon - Rust daemon for TE HTU21D relative humidity and temperature sensor. Get data from sensor and send it to MQTT broker.
+- recipes-rust/slint-gui - GUI for meteostation based on Slint - Rust GUI framework, fetch data from MQTT broker. GitHub page https://github.com/TEPOTPOH/slint-meteo-gui .
+- recipes-rust/weather-provider - Weather data provider, send data to MQTT broker. GitHub page https://github.com/TEPOTPOH/mqtt-weather-provider .
+- recipes-support/ntp - Configure NTP service in order to have real time in system, needs for HTTPS requests.
+- recipes-support/ntp-waiter - Service for waiting for NTP service synchronization and HTTPS connection start working.
 
 
 HOW TO USE
@@ -114,4 +114,4 @@ HOW TO USE
 ```
 sudo dd bs=4M if=<path to image build directory>/tmp/deploy/images/cubieboard/core-image-meteo-cubieboard.sunxi-sdimg of=/dev/sd<X> status=progress && sync /dev/sd<X>
 ```
-5. Insert SD card to Cubieboard, Power ON
+5. Insert SD card to Cubieboard, enable power
