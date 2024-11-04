@@ -14,6 +14,8 @@ inherit update-rc.d
 
 setup_env_cmd = ". ${sysconfdir}/profile.d/set_global_env.sh"
 
+do_install[vardepsexclude] = "${BPN}"
+
 do_install:append () {
     install -d ${D}${sysconfdir}/init.d/
     install -m 0755 ${S}/${BPN}.init ${D}${sysconfdir}/init.d/${BPN}

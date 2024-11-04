@@ -1,21 +1,28 @@
 #! /bin/sh
 
 THRESHOLD_DATE="@BUILDDATE@"
+MAX_TRIES=20
 
 check_date() {
-  # convert to UNIX-timestamp
-  CURRENT_DATE_EPOCH=$(date +%s)
-  THRESHOLD_DATE_EPOCH=$(date -d "$THRESHOLD_DATE" +%s)
-  # convert from YYYYMMDD to YYYY-MM-DD
-  THRESHOLD_DATE2="${THRESHOLD_DATE:0:4}-${THRESHOLD_DATE:4:2}-${THRESHOLD_DATE:6:2}"
-  # convert from YYYY-MM-DD to UNIX-timestamp
-  THRESHOLD_DATE_EPOCH=$(date -d ${THRESHOLD_DATE2} +%s)
+    # convert to UNIX-timestamp
+    CURRENT_DATE_EPOCH=$(date +%s)
+    # convert from YYYYMMDD to YYYY-MM-DD
+    THRESHOLD_DATE2="${THRESHOLD_DATE:0:4}-${THRESHOLD_DATE:4:2}-${THRESHOLD_DATE:6:2}"
+    # convert from YYYY-MM-DD to UNIX-timestamp
+    THRESHOLD_DATE_EPOCH=$(date -d ${THRESHOLD_DATE2} +%s)
 
-  if [[ "$CURRENT_DATE_EPOCH" -lt "$THRESHOLD_DATE_EPOCH" ]]; then
-    return 1  # date is less then threshold
-  else
-    return 0  # date is correct
-  fi
+    if [[ "$CURRENT_DATE_EPOCH" -lt "$THRESHOLD_DATE_EPOCH" ]]; then
+        echo "ntp_waiter: System time is earlier than $THRESHOLD_DATE. Waiting for NTP synchronization..."
+        return 1  # date is less then threshold
+    else
+        # Check if https connection works
+        wget --spider https://ya.ru -O /dev/null -q 2>/dev/null
+        if [[ $? -ne 0 ]]; then
+            echo "ntp_waiter: HTTPS connection still not accessable ..."
+            return 1
+        fi
+        return 0  # date is correct, https works
+    fi
 }
 
 set -e
@@ -27,16 +34,24 @@ umask 022
 
 export PATH="${PATH:+$PATH:}@BINDIR@"
 
+try_count=1
+
 case "$1" in
     start)
+        echo "ntp_waiter: Checking NTP synchronization and HTTPS connection ..."
         while ! check_date; do
-            echo "System time is earlier than $THRESHOLD_DATE. Waiting for NTP synchronization..."
+            echo "ntp_waiter: Attempt $try_count failed, try again ..."
+            try_count=$((try_count + 1))
+            if [[ $try_count -ge $MAX_TRIES ]]; then
+                echo "ntp_waiter: Max tries reached. NTP and HTTPS connection failed."
+                exit 1
+            fi
             sleep 5
         done
-        echo "System time is correct. Proceeding..."
+        echo "ntp_waiter: System time is correct, HTTPS is working."
         ;;
     *)
-        echo "Usage: $0 {start}"
+        echo "ntp_waiter: Usage: $0 {start}"
         exit 1
 esac
 

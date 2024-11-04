@@ -16,7 +16,7 @@ IMAGE_INSTALL:append = " weather-provider"
 IMAGE_INSTALL:append = " mosquitto"
 
 # other required packages
-IMAGE_FEATURES += "x11 ssh-server-dropbear hwcodecs"
+IMAGE_FEATURES += "ssh-server-dropbear hwcodecs"
 # setup timezone and updating time via NTP
 IMAGE_INSTALL:append = " ntp tzdata ntp-waiter"
 
